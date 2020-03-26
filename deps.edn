@@ -3,11 +3,13 @@
  :deps
  {org.clojure/clojure           {:mvn/version "1.10.1"}
   org.clojure/clojurescript     {:mvn/version "1.10.597"}
-  com.bhauman/cljs-test-display {:mvn/version "0.1.1"}}
+  com.bhauman/cljs-test-display {:mvn/version "0.1.1"}
+  reagent                       {:mvn/version "0.10.0"}}
 
  :aliases
  {:dev
-  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.8.93"}}}
+  {:extra-paths ["dev"]
+   :extra-deps {thheller/shadow-cljs {:mvn/version "2.8.93"}}}
 
   :test
   {:extra-deps {lambdaisland/kaocha {:mvn/version "0.0-601"}}}}}

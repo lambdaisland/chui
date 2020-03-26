@@ -6,6 +6,14 @@
 
 WIP. Not currently open for outside contributions.
 
+## 錘 (锤) [chuí]
+
+- hammer
+- to hammer into shape
+- weight (e.g. of a steelyard or balance)
+
+See the [Line Dict entry](https://dict.naver.com/linedict/zhendict/dict.html#/cnen/entry/cf6a566ba4a64496b8d8610525f3d9e8) for an audio sample.
+
 ## License
 
 Copyright &copy; 2020 Arne Brasseur and Contributors
