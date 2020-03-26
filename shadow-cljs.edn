@@ -1,0 +1,13 @@
+{:deps
+ {:aliases [:dev]}
+
+ :dev-http
+ {8000 "classpath:public"}
+
+ :builds
+ {:main
+  {:target     :browser
+   :modules    {:main {:entries [project.core]}}
+   :output-dir "resources/public/ui"
+   :asset-path "/ui"
+   :devtools   {:repl-pprint true}}}}
