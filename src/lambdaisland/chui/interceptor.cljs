@@ -13,6 +13,7 @@
             [lambdaisland.glogi :as log]))
 
 (defn- throwable->ex-info [t interceptor stage]
+  (log/warn :error-in-interceptor (assoc interceptor :stage stage) :exception t)
   (ex-info (str "Exception in interceptor " (:name interceptor) " during the " stage " stage.")
            (merge
             {:stage stage
@@ -35,8 +36,8 @@
       (let [obj (apply f ctx args)]
         (if (util/thenable? obj)
           (-> obj
-              (p/then execute*)
-              (p/catch*
+              (p/then
+               execute*
                (fn [err]
                  (execute* (assoc ctx ::error (throwable->ex-info err interceptor stage))))))
           (execute* obj)))

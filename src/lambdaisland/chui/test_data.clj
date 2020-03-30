@@ -40,7 +40,7 @@
 
 (defmacro capture-test-data! []
   `(do
-     (reset! test-ns-data ~(doto (test-data) prn))
+     (reset! test-ns-data ~(test-data))
      (lambdaisland.glogi/debug :lambdaisland.chui/capture-test-data! @test-ns-data)))
 
 
