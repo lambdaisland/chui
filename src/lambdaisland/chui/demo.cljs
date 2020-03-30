@@ -1,11 +1,19 @@
 (ns lambdaisland.chui.demo
   (:require [lambdaisland.chui-demo.a-test]
             [lambdaisland.chui.ui :as ui]
-            [lambdaisland.chui.test-info :as test-info]))
+            [lambdaisland.chui.test-data :as test-data]
+            [lambdaisland.glogi :as log]
+            [lambdaisland.glogi.console :as glogi-console]))
 
-(def ui (ui/render! (.getElementById js/document "app")))
+(log/set-levels '{:glogi/root :all
+                  lambdaisland.chui.interceptor :error})
 
+(glogi-console/install!)
 
-(test-info/capture-test-data!)
+(def ui
+  (ui/render! (.getElementById js/document "app")))
 
-((:test-fn (first @test-info/tests)))
+(test-data/capture-test-data!)
+
+(comment
+  @test-data/test-ns-data)

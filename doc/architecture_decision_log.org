@@ -1,0 +1,127 @@
+#+TITLE: lambdaisland/chui: Architecture Decision Log
+
+For information on ADRs (Architecture Decision Records) see [[http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions][Documenting
+Architecture Decisions]] by Michael Nygard.
+
+* 001: Chui is a test runner for cljs.test
+
+  Status: ACCEPTED
+
+** Context
+
+~cljs.test~ really consists of two parts: a testing library which you use to
+define your tests (~deftest~, ~testing~, ~is~, ~are~, ~async~, ~use-fixtures~),
+and a test runner (~run-tests~, ~run-all-tests~, ~report~).
+
+** Decision
+
+We want to replace the latter (the test runner) to provide a richer, more
+interactive user experience, through a browser based UI which allows running all
+or a subset of tests, and which attractively presents the test results, done in
+a way that interacts nicely with auto-reload workflows like
+shadow-cljs/figwheel.
+
+** Consequences
+
+The test library and test runner part of ~cljs.test~ are not clearly separated,
+the latter makes some fairly specific assumptions about the former, and vice
+versa. We want to stay compatible with existing tests, so we'll have to work
+with the assumptions that the testing library makes, even if that will sometimes
+lead to awkward workarounds.
+
+* 002: Chui makes minimal use of macros
+
+  Status: ACCEPTED
+
+** Context
+
+~cljs.test~ is heavily macro-based. The ~run-*~ functions are actually macros
+which inspect the compiler state, and based on that generate code that executes
+tests. This limits the user experience that tooling is able to provide, because
+it is not possible to invoke specific tests dynamically, at runtime.
+
+** Decision
+
+We use a single macro to extract information about tests from the compiler env
+(namespaces, fixtures, and test vars), and store that information for later use.
+
+** Consequences
+
+By splitting the data extraction from test running we are decomplecting the
+~cljs.test~ test runner. The downside of this approach is that we are only able
+to find information about namespaces that have been analyzed (compiled) by the
+time the macro gets executed. In other word, there has to be a top level
+namespace which has dependencies (i.e. ~:require~ statements) onto all test
+namespaces.
+
+This can be handled automatically by something like the shadow-cljs
+~:browser-test~ target, or through a compiler hook (in environments that have
+that), or explicitly/manually by maintaining a list of `:require` statements.
+
+* 003: Chui consists conceptually of three parts: a test-data, runner, and UI
+
+  Status: ACCEPTED
+
+** Context
+
+We are building Chui with a very specific use case in mind, but at the same time
+we want to make sure that what we are building is maximally useful to the open
+source community, now and in the future.
+
+** Decision
+
+Chui is split into three layers, which can be used together or separately. The
+bottom layer is the test-data layer described in ADR-002. It allows capturing
+test data for later use, and may provide some affordances for querying that data
+once it is captured.
+
+The runner part is the heart of Chui. It allows invoking a test run for a
+specific subset of tests, to be notified of progress, to interrupt an active
+test run, and to inspect test results.
+
+Finally we provide a browser-based user interface for interacting with Chui.
+Running tests, and inspecting results.
+
+** Consequences
+
+It is possible to only use the test-data layer, or only the test-data and runner
+layers. This allows for the creation of other interfaces like a command line
+interface, or a websocket interface.
+
+* 004: A promise based interceptor implementation forms the execution engine for test runs
+
+  Status: ACCEPTED
+
+** Context
+
+JavaScript and hence ClojureScript forms a single-threaded, evented environment.
+To chain multiple asynchronous events you need some kind of continuation system.
+Traditionally this was done with callbacks. Modern JavaScript has standardized
+on the use of promise objects (thenables).
+
+~cljs.test~ contains its own continuation-passing-style callback-based "async
+object", tagged by the ~IAsyncTest~ protocol.
+
+** Decision
+
+Where possible we use JS Promises to model asynchrony. To process a chain of
+potentially asynchronous operations we use a custom implementation of the
+interceptor pattern.
+
+Promises provide a convenient mental model, and allow us to leverage existing
+browser-based tooling and libraries. Interceptors provide a convenient way to
+model, reason about, and execute a multi-stage process.
+
+** Consequences
+
+When running tests or fixtures we need to test for ~IAsyncTest~ return values,
+and convert these to promises. The use of interceptors provides us a way to
+thread process state through multiple stages by way of the context.
+
+* Template
+
+  Status: ACCEPTED / SUPERSEDED BY XXX
+
+** Context
+** Decision
+** Consequences

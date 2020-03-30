@@ -8,6 +8,8 @@ WIP. Not currently open for outside contributions.
 
 ## 錘 (锤) [chuí]
 
+(rhymes with "hey")
+
 - hammer
 - to hammer into shape
 - weight (e.g. of a steelyard or balance)
