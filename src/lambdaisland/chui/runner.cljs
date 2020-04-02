@@ -169,7 +169,17 @@
 (defmethod t/report [::default :pass] [m]
   (update-run-var update :assertions conj m))
 
-(run-tests @test-data/test-ns-data)
+(defn summary [{:keys [nss]}]
+  (merge
+   {:tests 0 :pass 0 :fail 0 :error 0}
+   (frequencies
+    (flatten
+     (for [{:keys [vars]} nss
+           {:keys [assertions]} vars]
+       [:tests
+        (for [{:keys [type]} assertions]
+          type)])))))
+
 
 (comment
   (defn legacy-reporter [reporter]

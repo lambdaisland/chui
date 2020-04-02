@@ -5,15 +5,14 @@
             [lambdaisland.glogi :as log]
             [lambdaisland.glogi.console :as glogi-console]))
 
-(log/set-levels '{:glogi/root :all
-                  lambdaisland.chui.interceptor :error})
-
 (glogi-console/install!)
+
+(log/set-levels
+ '{:glogi/root :debug
+   lambdaisland :all
+   lambdaisland.chui.interceptor :error})
 
 (def ui
   (ui/render! (.getElementById js/document "app")))
 
 (test-data/capture-test-data!)
-
-(comment
-  @test-data/test-ns-data)
