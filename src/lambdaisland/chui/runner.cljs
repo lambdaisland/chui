@@ -44,8 +44,8 @@
 
   IAsyncTest values are created using the `cljs.test/async` macro, which may be
   used in tests (deftest) and fixtures to implement asynchrony. "
-  [f]
-  {:name ::cljs-test-intor
+  [name f]
+  {:name name
    :enter (fn [ctx]
             (let [result (f)]
               (if (t/async? result)
@@ -65,7 +65,7 @@
   "Sequence of interceptors which handle a single test var."
   [test]
   (let [the-var (:var test)
-        test-fn (:test (meta the-var))]
+        test-fn (:test test)]
     [(report-intor {:type :begin-test-var :var the-var})
      {:name :begint-var-update-env
       :enter (fn [ctx]
@@ -75,13 +75,19 @@
                                                        :assertions []
                                                        :done? false))
                ctx)}
-     (cljs-test-intor test-fn)
+     (cljs-test-intor (:name test) test-fn)
      {:name :end-var-update-env
       :enter (fn [ctx]
                (t/update-current-env! [:testing-vars] rest)
                (update-run-var assoc :done? true)
                ctx)}
      (report-intor {:type :end-test-var :var the-var})]))
+
+(defn fixture-intors [ns stage type fixtures]
+  (let [fix (keep stage fixtures)]
+    (cond-> (map #(cljs-test-intor (keyword (str ns) (str (name stage) "-" (name type))) %) fix)
+      (= :after stage)
+      reverse)))
 
 (defn ns-intors
   "Sequence of interceptors which handle a single namespace, including
@@ -95,16 +101,16 @@
                                             :done? false
                                             :vars []})
               ctx)}]
-   (keep (comp cljs-test-intor :before) once-fixtures)
+   (fixture-intors ns :before :once once-fixtures)
    (->> tests
         (sort-by (comp :line :meta))
         (map var-intors)
         (mapcat (fn [var-intors]
                   (concat
-                   (keep (comp cljs-test-intor :before) each-fixtures)
+                   (fixture-intors ns :before :each once-fixtures)
                    var-intors
-                   (reverse (keep (comp cljs-test-intor :after) each-fixtures))))))
-   (reverse (keep (comp cljs-test-intor :after) once-fixtures))
+                   (fixture-intors ns :after :each once-fixtures)))))
+   (fixture-intors ns :after :once once-fixtures)
    {:name :end-ns-update-run
     :enter (fn [ctx]
              (update-run update :nss assoc :done? true)
@@ -115,7 +121,8 @@
   {:name ::log-error
    :error (fn [ctx error]
             (let [data (ex-data error)]
-              (log/log "lambdaisland.chui.runner" :error (dissoc data :exception) (:exception data))))})
+              (log/error :failed-interceptor-chain (dissoc data :exception)
+                         :exception (:exception data))))})
 
 #_
 ;; for debugging / visualizing progress
@@ -127,22 +134,25 @@
                                (resolve ctx))
                              ms)))})
 
-(defn run-tests [tests]
-  (let [terminate? (atom false)]
-    (new-test-run! {:terminate! #(reset! terminate? true)
-                    :nss []
-                    :ctx {}
-                    :done? false
-                    :start (js/Date.)})
-    (set! t/*current-env* (t/empty-env ::default))
-    (p/let [ctx (-> {::intor/terminate? terminate?
-                     ::intor/on-context #(update-run assoc :ctx %)}
-                    (intor/enqueue [log-error-intor])
-                    (intor/enqueue (mapcat #(apply ns-intors %) tests))
-                    intor/execute)]
-      (update-run assoc
-                  :ctx ctx
-                  :done? true))))
+(defn run-tests
+  ([]
+   (run-tests @test-data/test-ns-data))
+  ([tests]
+   (let [terminate? (atom false)]
+     (new-test-run! {:terminate! #(reset! terminate? true)
+                     :nss []
+                     :ctx {}
+                     :done? false
+                     :start (js/Date.)})
+     (set! t/*current-env* (t/empty-env ::default))
+     (p/let [ctx (-> {::intor/terminate? terminate?
+                      ::intor/on-context #(update-run assoc :ctx %)}
+                     (intor/enqueue [log-error-intor])
+                     (intor/enqueue (mapcat #(apply ns-intors %) tests))
+                     intor/execute)]
+       (update-run assoc
+                   :ctx ctx
+                   :done? true)))))
 
 ;; cljs.test's version of this is utterly broken. This version is not great but
 ;; at least it kind of works in both Firefox and Chrome. To do this properly
@@ -188,4 +198,7 @@
 
   (defn report [m]
     (doseq [f (:reporters (t/get-current-env))]
-      (f m))))
+      (f m)))
+
+  (get @test-data/test-ns-data 'pitch.app.block.table.layout-test)
+  )
