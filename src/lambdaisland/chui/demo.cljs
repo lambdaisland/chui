@@ -14,12 +14,12 @@
    lambdaisland.chui.interceptor :error})
 
 (defn start []
-  ())
+  (test-data/capture-test-data!)
+  (runner/run-tests))
 
 (defn stop [done]
-  (done))
+  (runner/terminate! done))
 
 (defn ^:export init []
   (ui/render! (.getElementById js/document "app"))
-  (test-data/capture-test-data!)
   (start))
