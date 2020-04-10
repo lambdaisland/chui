@@ -12,7 +12,7 @@
 (def inst-pattern "yyyy-MM-dd'T'HH:mm:ss.SSS-00:00")
 
 (defn reltime [date]
-  [:time {:datetime (.format (DateTimeFormat. inst-pattern) (js/Date.))}
+  [:time {:dateTime (.format (DateTimeFormat. inst-pattern) (js/Date.))}
    (date-relative/format (.getTime date))])
 
 (defn summary [sum]

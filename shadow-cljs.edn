@@ -6,10 +6,11 @@
 
  :builds
  {:main
-  {:target     :browser
-   :modules    {:main {:entries [lambdaisland.chui.demo]}}
-   :output-dir "resources/public/ui"
+  {:target     :browser-test
+   :runner-ns  lambdaisland.chui.demo
+   :test-dir   "resources/public"
    :asset-path "/ui"
+   :ns-regexp  "-test$"
    :devtools   {:repl-pprint true}}}
 
  :cache-blockers #{lambdaisland.chui.styles}
