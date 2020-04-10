@@ -95,17 +95,13 @@
   interceptors to be executed. Other special values that can be passed in as
   part of the context:
 
-  - `::async?` a predicate to check if a value is an asynchronous object, defaults
-    to checking for thenables (promises)
-  - `::continue` a function that takes an asynchronous object that resolves to a
-    new context map, and that calls `execute*` on the new context map when it
-    resolves
   - `::on-context` a callback that gets called at every iteration with the new
     context map. Useful for keeping track of progress. Note that `::on-context`
     gets called on the *start* of every iteration. To get the final context see
     `::resolve`/`::reject`.
-  - `::resolve` function that gets called with the final context map, assuming no errors occur
-  "
+  - `::terminate?` an atom which, when set to true, will short circuit the
+    process at the next possible occasion
+  - `::resolve` function that gets called with the final context map"
   [{::keys [queue stack error on-context terminate? resolve] :as ctx}]
   (log/trace :execute ctx)
 

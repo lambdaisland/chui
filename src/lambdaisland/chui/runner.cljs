@@ -4,15 +4,19 @@
             [kitchen-async.promise :as p]
             [lambdaisland.chui.interceptor :as intor]
             [lambdaisland.chui.test-data :as test-data]
-            [lambdaisland.glogi :as log]))
+            [lambdaisland.glogi :as log]
+            [reagent.core :as reagent]))
 
-(defonce test-runs (atom []))
+(defonce state (reagent/atom {:runs []
+                              :ctx-promise nil
+                              :selection nil}))
 
 (defn current-run []
-  (last @test-runs))
+  (last (:runs @state)))
 
 (defn update-run [f & args]
-  (swap! test-runs
+  (swap! state
+         update :runs
          (fn [runs]
            (apply update runs (dec (count runs)) f args))))
 
@@ -32,7 +36,7 @@
     counters))
 
 (defn new-test-run! [m]
-  (dec (count (swap! test-runs conj m))))
+  (dec (count (swap! state update :runs conj m))))
 
 (defn cljs-test-intor
   "Turn a function which may return a cljs.test IAsyncTest into a promise-based interceptor.
@@ -92,30 +96,32 @@
 (defn ns-intors
   "Sequence of interceptors which handle a single namespace, including
   once-fixtures and each-fixtures."
-  [ns {:keys [tests each-fixtures once-fixtures] :as ns-data}]
-  (concat
-   [(report-intor {:type :begin-test-ns :ns ns})
-    {:name :begin-ns-update-run
-     :enter (fn [ctx]
-              (update-run update :nss conj {:ns ns
-                                            :done? false
-                                            :vars []})
-              ctx)}]
-   (fixture-intors ns :before :once once-fixtures)
-   (->> tests
-        (sort-by (comp :line :meta))
-        (map var-intors)
-        (mapcat (fn [var-intors]
-                  (concat
-                   (fixture-intors ns :before :each once-fixtures)
-                   var-intors
-                   (fixture-intors ns :after :each once-fixtures)))))
-   (fixture-intors ns :after :once once-fixtures)
-   {:name :end-ns-update-run
-    :enter (fn [ctx]
-             (update-run update :nss assoc :done? true)
-             ctx)}
-   [(report-intor {:type :end-test-ns :ns ns})]))
+  [ns {:keys [meta tests each-fixtures once-fixtures] :as ns-data}]
+  (when (and (not (:test/skip meta)) )
+    (when-let [tests (seq (remove (comp :test/skip :meta) tests))]
+      (concat
+       [(report-intor {:type :begin-test-ns :ns ns})
+        {:name :begin-ns-update-run
+         :enter (fn [ctx]
+                  (update-run update :nss conj {:ns ns
+                                                :done? false
+                                                :vars []})
+                  ctx)}]
+       (fixture-intors ns :before :once once-fixtures)
+       (->> tests
+            (sort-by (comp :line :meta))
+            (map var-intors)
+            (mapcat (fn [var-intors]
+                      (concat
+                       (fixture-intors ns :before :each once-fixtures)
+                       var-intors
+                       (fixture-intors ns :after :each once-fixtures)))))
+       (fixture-intors ns :after :once once-fixtures)
+       {:name :end-ns-update-run
+        :enter (fn [ctx]
+                 (update-run update :nss assoc :done? true)
+                 ctx)}
+       [(report-intor {:type :end-test-ns :ns ns})]))))
 
 (def log-error-intor
   {:name ::log-error
@@ -133,26 +139,6 @@
               (js/setTimeout (fn []
                                (resolve ctx))
                              ms)))})
-
-(defn run-tests
-  ([]
-   (run-tests @test-data/test-ns-data))
-  ([tests]
-   (let [terminate? (atom false)]
-     (new-test-run! {:terminate! #(reset! terminate? true)
-                     :nss []
-                     :ctx {}
-                     :done? false
-                     :start (js/Date.)})
-     (set! t/*current-env* (t/empty-env ::default))
-     (p/let [ctx (-> {::intor/terminate? terminate?
-                      ::intor/on-context #(update-run assoc :ctx %)}
-                     (intor/enqueue [log-error-intor])
-                     (intor/enqueue (mapcat #(apply ns-intors %) tests))
-                     intor/execute)]
-       (update-run assoc
-                   :ctx ctx
-                   :done? true)))))
 
 ;; cljs.test's version of this is utterly broken. This version is not great but
 ;; at least it kind of works in both Firefox and Chrome. To do this properly
@@ -179,17 +165,66 @@
 (defmethod t/report [::default :pass] [m]
   (update-run-var update :assertions conj m))
 
-(defn summary [{:keys [nss]}]
+(defn ns-summary [{:keys [vars]}]
   (merge
    {:tests 0 :pass 0 :fail 0 :error 0}
    (frequencies
     (flatten
-     (for [{:keys [vars]} nss
-           {:keys [assertions]} vars]
+     (for [{:keys [assertions]} vars]
        [:tests
         (for [{:keys [type]} assertions]
           type)])))))
 
+(defn run-summary [{:keys [nss]}]
+  (apply merge-with +
+         {:tests 0 :pass 0 :fail 0 :error 0}
+         (map ns-summary nss)))
+
+(defn error? [{:keys [error]}]
+  (pos-int? error))
+
+(defn fail? [{:keys [fail error]}]
+  (or (pos-int? fail)
+      (pos-int? error)))
+
+(def pass? (complement fail?))
+
+(defn run-tests
+  ([]
+   (let [tests @test-data/test-ns-data]
+     (run-tests
+      (if-let [selected (:selected @state)]
+        (select-keys tests selected)
+        tests))))
+  ([tests]
+   (let [terminate? (atom false)]
+     (new-test-run! {:id (random-uuid)
+                     :terminate! #(reset! terminate? true)
+                     :nss []
+                     :ctx {}
+                     :done? false
+                     :start (js/Date.)})
+     (set! t/*current-env* (t/empty-env ::default))
+     (let [ctx-promise (-> {::intor/terminate? terminate?
+                            ::intor/on-context #(update-run assoc :ctx %)}
+                           (intor/enqueue [log-error-intor])
+                           (intor/enqueue (mapcat #(apply ns-intors %) tests))
+                           intor/execute)]
+       (update-run assoc :donep ctx-promise)
+       (p/let [ctx ctx-promise]
+         (update-run assoc
+                     :ctx ctx
+                     :done? true))))))
+
+(defn terminate!
+  ([]
+   (terminate! nil))
+  ([callback]
+   (when-let [run (current-run)]
+     (when-let [donep (and callback (:donep run))]
+       (p/let [ctx donep]
+         (callback ctx)))
+     ((:terminate! run)))))
 
 (comment
   (defn legacy-reporter [reporter]

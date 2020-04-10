@@ -2,6 +2,9 @@
   (:require [garden.core :as garden]
             [garden.stylesheet :as stylesheet]))
 
+(def washed-red "#FFDFDF")
+(def washed-green "#E8FDF5")
+
 (def styles
   [[:main
     {:margin "5vh 10vw"
@@ -26,8 +29,12 @@
     ["0%" {:transform "rotate(0deg)"}]
     ["100%" {:transform "rotate(360deg)"}])
 
-   [:.run.error :section.fail {:background-color "#FFDFDF"}]
-   [:.run.pass {:background-color "#E8FDF5"}]
+   [:.run.fail [:h1 {:background-color washed-red}]]
+   [:.run.error [:h1 {:background-color washed-red}]]
+   [:.run.pass [:h1 {:background-color washed-green}]]
+   [:.ns.error {:background-color washed-red}]
+   [:.ns.fail {:background-color washed-red}]
+   [:.ns.pass {:background-color washed-green}]
    [:.ns
     [:h2 {:border-bottom "1px solid #666"}]
     [:.filename {:float "right"

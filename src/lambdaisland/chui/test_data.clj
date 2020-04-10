@@ -15,60 +15,44 @@
    :meta `'~(:meta var)})
 
 (defn- all-cljs-vars []
+  (def env @env/*compiler*)
   (->> @env/*compiler*
        :cljs.analyzer/namespaces
        vals
        (mapcat (comp vals :defs))))
 
-(defn- test-data []
+(defn- cljs-nss [env]
+  (vals (:cljs.analyzer/namespaces env)))
+
+(defn- ns-vars [ns-info]
+  (vals (:defs ns-info)))
+
+(defn- test-data [env]
   (reduce
-   (fn [m v]
-     (cond
-       (:test v)
-       (update-in m [`'~(var-ns v) :tests] (fnil conj []) (test-var-info v))
+   (fn [m {:keys [name meta] :as ns-info}]
+     (let [vars (ns-vars ns-info)]
+       (if (seq (filter :test vars))
+         (reduce
+          (fn [m v]
+            (cond
+              (:test v)
+              (update-in m [`'~name :tests] (fnil conj []) (test-var-info v))
 
-       (=  'cljs-test-once-fixtures (var-name v))
-       (assoc-in m [`'~(var-ns v) :once-fixtures] (:name v))
+              (=  'cljs-test-once-fixtures (var-name v))
+              (assoc-in m [`'~name :once-fixtures] (:name v))
 
-       (=  'cljs-test-each-fixtures (var-name v))
-       (assoc-in m [`'~(var-ns v) :each-fixtures] (:name v))
+              (=  'cljs-test-each-fixtures (var-name v))
+              (assoc-in m [`'~name :each-fixtures] (:name v))
 
-       :else
-       m))
+              :else
+              m))
+          (assoc-in m [`'~name :meta] meta)
+          vars)
+         m)))
    {}
-   (all-cljs-vars)))
+   (cljs-nss env)))
 
 (defmacro capture-test-data! []
   `(do
-     (reset! test-ns-data ~(test-data))
+     (reset! test-ns-data ~(test-data @env/*compiler*))
      (lambdaisland.glogi/debug :lambdaisland.chui/capture-test-data! @test-ns-data)))
-
-
-#_
-(->> env
-     :cljs.analyzer/namespaces
-     vals
-     (mapcat (comp vals :defs))
-     (filter :test))
-;; => ({:protocol-inline nil
-;;      :meta
-;;      {:file "lambdaisland/chui_demo/a_test.cljs"
-;;       :line 4
-;;       :column 10
-;;       :end-line 4
-;;       :end-column 17}
-;;      :name lambdaisland.chui-demo.a-test/aa-test
-;;      :file "lambdaisland/chui_demo/a_test.cljs"
-;;      :end-column 17
-;;      :method-params ([])
-;;      :protocol-impl nil
-;;      :arglists-meta ()
-;;      :column 1
-;;      :variadic? false
-;;      :line 4
-;;      :ret-tag #{any clj-nil}
-;;      :end-line 4
-;;      :max-fixed-arity 0
-;;      :fn-var true
-;;      :arglists nil
-;;      :test true})

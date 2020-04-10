@@ -12,4 +12,5 @@
    :asset-path "/ui"
    :devtools   {:repl-pprint true}}}
 
- :cache-blockers #{lambdaisland.chui.styles}}
+ :cache-blockers #{lambdaisland.chui.styles}
+ }
