@@ -14,6 +14,7 @@
    lambdaisland.chui.interceptor :error})
 
 (defn start []
+  (ui/render! (.getElementById js/document "app"))
   (test-data/capture-test-data!)
   (runner/run-tests))
 

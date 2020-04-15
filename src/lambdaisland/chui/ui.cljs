@@ -5,7 +5,8 @@
             [lambdaisland.chui.test-data :as test-data]
             [lambdaisland.glogi :as log]
             [reagent.core :as reagent]
-            [reagent.dom :as reagent-dom])
+            [reagent.dom :as reagent-dom]
+            [clojure.string :as str])
   (:require-macros [lambdaisland.chui.styles :as styles])
   (:import (goog.i18n DateTimeFormat)))
 
@@ -97,13 +98,17 @@
        ^{:key ns}
        [:option {:value ns} ns])]))
 
+(defn test-stop-button []
+  (let [{:keys [runs]} @runner/state]
+    (if (false? (:done? (last runs)))
+      [:button {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop test run"]
+      [:button {:on-click #(runner/run-tests)} "Run Tests"])))
+
 (defn app []
   (let [{:keys [selected runs]} @runner/state]
     [:main
      [:style (styles/inline)]
-     (if (false? (:done? (last runs)))
-       [:button {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop test run"]
-       [:button {:on-click #(runner/run-tests)} "Run Tests"])
+     [test-stop-button]
      [test-selector selected]
      (for [run (reverse runs)]
        ^{:key (str (:start run))}
@@ -149,7 +154,22 @@
    [:a.name {:href "/info"} "\\ ˈchüāi?\\"]])
 
 (defn select-namespace [namespace-name]
-  (.log js/console namespace-name))
+  (swap! runner/state
+         assoc
+         :selected
+         [namespace-name]))
+
+(defonce ui-state (reagent/atom {}))
+
+(defn filtered-ns-names []
+  (let [{:keys [query]} @ui-state
+        query (if (string? query)
+                (str/trim query)
+                "")
+        nss (sort (keys @test-data/test-ns-data))]
+    (if (str/blank? query)
+      nss
+      (filter #(str/includes? (str %) query) nss))))
 
 (defn test-selector-2 [selected]
   (reagent/with-let [this (reagent/current-component)]
@@ -157,28 +177,54 @@
     [:section.namespaces
      [:input {:type "search"
               ;; :auto-focus true
+              :value (:query @ui-state)
+              :on-change (fn [e]
+                           (let [query (.. e -target -value)]
+                             (swap! ui-state assoc :query query)
+                             (swap! runner/state
+                                    assoc
+                                    :selected
+                                    (when-not (str/blank? (str/trim query))
+                                      (filtered-ns-names)))))
               :placeholder "test.name.space"}]
+     [test-stop-button]
      [:div.namespace-selector
-      (for [ns (sort (keys @test-data/test-ns-data))]
-        ^{:key ns}
-        [:button.namespace-links
-         {:on-click (select-namespace namespace)} (str ns)])]]))
+      (for [ns (filtered-ns-names)]
+        ^{:key (str ns)}
+        [:div
+         [:input.namespace-links
+          {:id (str ns)
+           :name (str ns)
+           :type "checkbox"
+           :on-click #(select-namespace ns)}]
+         [:label {:for (str ns)} (str ns)]]
+        )]]))
 
-(defn history []
+(defn history [runs]
   [:section.history
    [:div.option
-    [:input#potion.toggle {:type "radio"
-                           :name "history"
-                           :value "potion"}]
-    [:label {:for "potion"} "name.space 00 minutes ago"]
-    [:p "32 assertions, 1 error, 2 failures"]]])
+    (for [{:keys [id nss start done?] :as run} (reverse runs)]
+      (let [sum (runner/run-summary run)]
+        ^{:key id}
+        [:div
+         [:input.toggle {:id id
+                         :type "radio"
+                         :name "history"
+                         :on-change #(swap! ui-state assoc :selected-run run)}]
+         [:label {:for id}
+          (when-not done? [:span [:span.spinner] " "] )
+          [summary sum] " "
+          [reltime start]]]))]])
 
 (defn results []
   [:section.results
-   [:div
-    [:p "aa-test"]
-    [:code "(= 123 124)"]
-    [:code "(= 123 124)"]]])
+   (for [ns (:nss (:selected-run @ui-state))]
+     ^{:key (:ns ns)}
+     [ns-run ns])
+   #_[:div
+      [:p "aa-test"]
+      [:code "(= 123 124)"]
+      [:code "(= 123 124)"]]])
 
 (defn test-info []
   [:section.test-info
@@ -186,14 +232,15 @@
     [:header
      [:p "Diff/Stacktrace"]]]])
 
+
 (defn app2 []
   (let [{:keys [selected runs]} @runner/state]
     [:div
      [:style (styles/inline)]
      [header]
      [:main
-      [test-selector-2 selected]
-      [history]
+      [test-selector-2]
+      [history runs]
       [results]
       [test-info]]]))
 
