@@ -79,8 +79,7 @@
      [:h1 (when-not done? [:span [:span.spinner] " "] ) [summary sum] " "  [reltime start]]
      (for [ns nss]
        ^{:key (:ns ns)}
-       [ns-run ns])
-     ]))
+       [ns-run ns])]))
 
 (defn test-selector [selected]
   (reagent/with-let [this (reagent/current-component)]
@@ -110,5 +109,93 @@
        ^{:key (str (:start run))}
        [test-run run])]))
 
+(defn general-toggles []
+  [:div.general-toggles
+   [:input#regexp {:type "checkbox" :name "regexp"}]
+   [:label {:for "regexp"} "Regexp"]
+   [:input#passing {:type "checkbox" :name "passing"}]
+   [:label {:for "passing"} "Passing"]
+   [:input#history {:type "checkbox" :name "history"}]
+   [:label {:for "history"} "History"]])
+
+(defn columns-control []
+  [:div.columns-control
+   [:input#one-column {:type "radio" :name "columns" :value "One"}]
+   [:label {:for "one-column"} "One"]
+   [:input#two-columns {:type "radio" :name "columns" :value "Two"}]
+   [:label {:for "two-columns"} "Two"]
+   [:input#three-columns {:type "radio" :name "columns" :value "Three"}]
+   [:label {:for "three-columns"} "Three"]])
+
+(defn density-control []
+  [:div.density-control
+   [:input#dense {:type "radio" :name "whitespace" :value "Dense"}]
+   [:label {:for "dense"} "Dense"]
+   [:input#cozy {:type "radio" :name "whitespace" :value "Cozy"}]
+   [:label {:for "cozy"} "Cozy"]])
+
+(defn theme-control []
+  [:div.theme-control
+   [:input#theme {:type "checkbox" :name "theme"}]
+   [:label {:for "theme"} "Toggle theme"]])
+
+(defn header []
+  [:header
+   [general-toggles]
+   [:div.interface-controls
+    [columns-control]
+    [density-control]
+    [theme-control]]
+   [:a.name {:href "/info"} "\\ ˈchüāi?\\"]])
+
+(defn select-namespace [namespace-name]
+  (.log js/console namespace-name))
+
+(defn test-selector-2 [selected]
+  (reagent/with-let [this (reagent/current-component)]
+    (add-watch test-data/test-ns-data ::rerender #(reagent/force-update this))
+    [:section.namespaces
+     [:input {:type "search"
+              ;; :auto-focus true
+              :placeholder "test.name.space"}]
+     [:div.namespace-selector
+      (for [ns (sort (keys @test-data/test-ns-data))]
+        ^{:key ns}
+        [:button.namespace-links
+         {:on-click (select-namespace namespace)} (str ns)])]]))
+
+(defn history []
+  [:section.history
+   [:div.option
+    [:input#potion.toggle {:type "radio"
+                           :name "history"
+                           :value "potion"}]
+    [:label {:for "potion"} "name.space 00 minutes ago"]
+    [:p "32 assertions, 1 error, 2 failures"]]])
+
+(defn results []
+  [:section.results
+   [:div
+    [:p "aa-test"]
+    [:code "(= 123 124)"]
+    [:code "(= 123 124)"]]])
+
+(defn test-info []
+  [:section.test-info
+   [:article
+    [:header
+     [:p "Diff/Stacktrace"]]]])
+
+(defn app2 []
+  (let [{:keys [selected runs]} @runner/state]
+    [:div
+     [:style (styles/inline)]
+     [header]
+     [:main
+      [test-selector-2 selected]
+      [history]
+      [results]
+      [test-info]]]))
+
 (defn render! [element]
-  (reagent-dom/render [app] element))
+  (reagent-dom/render [app2] element))
