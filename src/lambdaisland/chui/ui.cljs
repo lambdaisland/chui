@@ -10,19 +10,219 @@
   (:require-macros [lambdaisland.chui.styles :as styles])
   (:import (goog.i18n DateTimeFormat)))
 
-(def inst-pattern "yyyy-MM-dd'T'HH:mm:ss.SSS-00:00")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; State
+
+(defonce ui-state (reagent/atom {}))
+
+(defn test-plan []
+  (let [tests @test-data/test-ns-data]
+    (if-let [selected (seq (:selected @runner/state))]
+      (select-keys tests selected)
+      tests)))
+
+(defn set-ns-select [ns-names]
+  (swap! runner/state
+         assoc
+         :selected
+         (set ns-names)))
+
+(defn toggle-ns-select [namespace-name add?]
+  (swap! runner/state
+         update
+         :selected
+         (fnil (if add? conj disj) #{})
+         namespace-name))
+
+(defn filtered-nss []
+  (let [{:keys [query]} @ui-state
+        query (if (string? query)
+                (str/trim query)
+                "")
+        nss (map val (sort-by key @test-data/test-ns-data))]
+    (if (str/blank? query)
+      nss
+      (filter #(str/includes? (str (:name %)) query) nss))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def iso-time-pattern "yyyy-MM-dd'T'HH:mm:ss.SSS-00:00")
+(def human-time-pattern "yyyy-MM-dd HH:mm:ss")
+
+(defn reltime-str [date]
+  (date-relative/format (.getTime date)))
+
+(defn iso-time-str [date]
+  (.format (DateTimeFormat. iso-time-pattern) date))
+
+(defn human-time-str [date]
+  (.format (DateTimeFormat. human-time-pattern) date))
 
 (defn reltime [date]
-  [:time {:dateTime (.format (DateTimeFormat. inst-pattern) (js/Date.))}
-   (date-relative/format (.getTime date))])
+  [:time {:dateTime (iso-time-str date)} (reltime-str date)])
 
 (defn summary [sum]
   (let [{:keys [tests pass error fail]} sum]
-    (str tests " tests"
+    (str tests " tests, " (+ pass error fail) " assertions"
          (when (pos-int? error)
            (str ", " error " errors"))
          (when (pos-int? fail)
            (str ", " fail " failures")))))
+
+(defn result-class [summary]
+  (cond
+    (runner/error? summary) "error"
+    (runner/fail? summary) "fail"
+    :else "pass"))
+
+(defn result-viz-var [{var-name :name :keys [assertions]}]
+  [:span.var
+   {:title (str var-name)}
+   (for [[i {:keys [type] :as ass}] (map vector (range) assertions)]
+     ^{:key (str i)}
+     [:span.assertion
+      {:class (name type)}
+      (case type
+        :pass
+        " "
+        :fail
+        "F"
+        :error
+        "E"
+        "?")])])
+
+(defn result-viz [nss selected]
+  [:div.result-viz
+   (for [{:keys [ns done? vars]} nss]
+     ^{:key (str ns)}
+     [:span.ns
+      {:title ns
+       :class (when (or (empty? selected)
+                        (contains? selected ns))
+                "selected-ns")}
+      (for [var-info vars]
+        ^{:key (str (:name var-info))}
+        [result-viz-var var-info])])])
+
+(defn ns-run [{:keys [ns vars] :as the-ns}]
+  (let [{:keys [selected-test only-failing?]} @ui-state
+        sum (runner/ns-summary the-ns)]
+    [:section.ns-run
+     [:h2.section-header (str ns)]
+     [:span.filename (:file (:meta (first vars)))]
+     [:div
+      (for [{:keys [name assertions] :as var-info} vars
+            :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
+            :let [selected? (= name (:name selected-test))]]
+        ^{:key (str name)}
+        [:div.ns-run-var.selection-target
+         {:class (when selected?
+                   "selected")
+          :on-click #(swap! ui-state
+                            (fn [s]
+                              (if selected?
+                                (dissoc s :selected-test)
+                                (assoc s :selected-test var-info))))}
+         (str name)
+         [:div.result-viz-var
+          [result-viz-var var-info]]])]]))
+
+(defn test-stop-button []
+  (let [{:keys [runs]} @runner/state
+        test-plan (test-plan)]
+    (if (false? (:done? (last runs)))
+      [:button.button.stop-tests {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop"]
+      [:button.button.run-tests {:on-click #(runner/run-tests test-plan)} "Run " (apply + (map (comp count :tests val) test-plan)) " tests"])))
+
+(defn general-toggles []
+  [:div.general-toggles
+   [:button {:on-click #(swap! runner/state assoc :runs [])} "Clear results"]
+   [:input#regexp {:type "checkbox" :name "regexp"}]
+   [:label {:for "regexp"} "Regexp"]
+   [:input#failing-only {:type "checkbox"
+                         :value (:only-failing? @ui-state)
+                         :on-click #(swap! ui-state update :only-failing? not)}]
+   [:label {:for "failing-only"} "Only show failing tests"]])
+
+(defn header []
+  [:header
+   [general-toggles]
+   [:a.name {:href "https://github.com/lambdaisland/chui"} "lambdaisland.chui"]])
+
+(defn results []
+  [:section.column.results
+   (for [ns (:nss (:selected-run @ui-state))]
+     ^{:key (:ns ns)}
+     [ns-run ns])])
+
+(defn history [runs]
+  [:section.column.history
+   [:div.option
+    (let [{:keys [selected]} @runner/state
+          {:keys [selected-run only-failing?]} @ui-state]
+      (for [{:keys [id nss start done? terminated?] :as run} (reverse runs)
+            :let [selected? (= (:id run) (:id selected-run))]]
+        (let [sum (runner/run-summary run)]
+          ^{:key id}
+          [:div.run.selection-target
+           {:class (when selected? "selected")}
+           [:div {:for id
+                  :on-click (fn [_]
+                              (swap! ui-state
+                                     (fn [s]
+                                       (if selected?
+                                         (dissoc s :selected-run)
+                                         (assoc s :selected-run run)))))}
+            [:h2.section-header {:title (str (human-time-str start) " (" (reltime-str start) ")")}
+             [summary sum]  " "
+             (when-not done?  " (running)")
+             (when terminated?  " (aborted)")]
+            [result-viz (if only-failing?
+                          (filter #(runner/fail? (runner/ns-summary %)) nss)
+                          nss) selected]
+            ]])))]])
+
+(defn test-selector []
+  (reagent/with-let [this (reagent/current-component)
+                     _ (add-watch test-data/test-ns-data ::rerender #(reagent/force-update this))]
+    (let [{:keys [selected]} @runner/state
+          {:keys [query]} @ui-state]
+      [:section.column-namespaces
+       [:div.search-bar
+        [:input {:type "search"
+                 ;; :auto-focus true
+                 :value query
+                 :on-change (fn [e]
+                              (let [query (.. e -target -value)]
+                                (swap! ui-state
+                                       #(assoc % :query query))
+                                (set-ns-select
+                                 (when-not (str/blank? (str/trim query))
+                                   (map :name (filtered-nss))))))
+                 :placeholder "name space"}]
+        [test-stop-button]]
+       [:div.namespace-selector
+        (for [{tests :tests
+               ns-sym :name
+               ns-meta :meta} (filtered-nss)
+              :let [ns-str (str ns-sym)
+                    test-count (count tests)]
+              :when (< 0 test-count)]
+          ^{:key ns-str}
+          [:div.namespace-links.selection-target
+           {:class (when (contains? selected ns-sym) "selected")}
+           [:input
+            {:id ns-str
+             :name ns-str
+             :type "checkbox"
+             :on-click #(when (str/blank? query)
+                          (toggle-ns-select ns-sym (.. % -target -checked)))}]
+           [:label {:for ns-str}
+            [:span ns-str (when (:test/skip ns-meta)
+                            [:span.skip " (skip)"])]
+            [:aside test-count (if (= 1 test-count)
+                                 " test"
+                                 " tests")]]])]])))
 
 (defn comparison [{:keys [actual expected]}]
   [:div
@@ -56,195 +256,38 @@
   [:div "error " (:message m)
    [comparison m]])
 
-(defn result-class [summary]
-  (cond
-    (runner/error? summary) "error"
-    (runner/fail? summary) "fail"
-    :else "pass"))
+(defn test-info []
+  (let [{:keys [selected-test]} @ui-state
+        {:keys [name assertions meta]} selected-test]
+    [:section.column.test-info
+     [:h2.section-header name]
+     (into [:div] (map (fn [m] [:div (pr-str m)])) assertions)
+     ]))
 
-(defn ns-run [{:keys [ns vars] :as the-ns}]
-  (let [sum (runner/ns-summary the-ns)]
-    [:div.ns {:class (result-class sum)}
-     [:h2 (str ns) [:span.filename (:file (:meta (first vars)))]]
-     (when (runner/fail? sum)
-       [:ul
-        (for [{:keys [name assertions]} vars]
-          (into ^{:key (str name)}
-                [:li (str name)]
-                (map #(vector assertion %))
-                assertions))])]))
-
-(defn test-run [{:keys [nss start done?] :as run}]
-  (let [sum (runner/run-summary run)]
-    [:section.run {:class (result-class sum)}
-     [:h1 (when-not done? [:span [:span.spinner] " "] ) [summary sum] " "  [reltime start]]
-     (for [ns nss]
-       ^{:key (:ns ns)}
-       [ns-run ns])]))
-
-(defn test-selector [selected]
-  (reagent/with-let [this (reagent/current-component)]
-    (add-watch test-data/test-ns-data ::rerender #(reagent/force-update this))
-    [:select {:value (or selected "ALL")
-              :on-change (fn [e]
-                           (let [v (.. e -target -value)]
-                             (swap! runner/state
-                                    assoc
-                                    :selected
-                                    (when (not= v "ALL")
-                                      [(symbol v)]))))}
-     [:option {:value "ALL"} "all tests"]
-     (for [ns (sort (keys @test-data/test-ns-data))]
-       ^{:key ns}
-       [:option {:value ns} ns])]))
-
-(defn test-stop-button []
-  (let [{:keys [runs]} @runner/state]
-    (if (false? (:done? (last runs)))
-      [:button.button.stop-tests {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop"]
-      [:button.button.run-tests {:on-click #(runner/run-tests)} "Run"])))
+(defn col-count []
+  (let [{:keys [selected-run selected-test]} @ui-state]
+    (cond
+      (and selected-run selected-test)
+      4
+      selected-run
+      3
+      :else
+      2)))
 
 (defn app []
-  (let [{:keys [selected runs]} @runner/state]
-    [:main
-     [:style (styles/inline)]
-     [test-stop-button]
-     [test-selector selected]
-     (for [run (reverse runs)]
-       ^{:key (str (:start run))}
-       [test-run run])]))
-
-(defn general-toggles []
-  [:div.general-toggles
-   [:input#regexp {:type "checkbox" :name "regexp"}]
-   [:label {:for "regexp"} "Regexp"]
-   [:input#passing {:type "checkbox" :name "passing"}]
-   [:label {:for "passing"} "Passing"]
-   [:input#history {:type "checkbox" :name "history"}]
-   [:label {:for "history"} "History"]])
-
-(defn columns-control []
-  [:div.columns-control
-   [:input#one-column {:type "radio" :name "columns" :value "One"}]
-   [:label {:for "one-column"} "One"]
-   [:input#two-columns {:type "radio" :name "columns" :value "Two"}]
-   [:label {:for "two-columns"} "Two"]
-   [:input#three-columns {:type "radio" :name "columns" :value "Three"}]
-   [:label {:for "three-columns"} "Three"]])
-
-(defn density-control []
-  [:div.density-control
-   [:input#dense {:type "radio" :name "whitespace" :value "Dense"}]
-   [:label {:for "dense"} "Dense"]
-   [:input#cozy {:type "radio" :name "whitespace" :value "Cozy"}]
-   [:label {:for "cozy"} "Cozy"]])
-
-(defn theme-control []
-  [:div.theme-control
-   [:input#theme {:type "checkbox" :name "theme"}]
-   [:label {:for "theme"} "Toggle theme"]])
-
-(defn header []
-  [:header
-   [general-toggles]
-   [:div.interface-controls
-    [columns-control]
-    [density-control]
-    [theme-control]]
-   [:a.name {:href "/info"} "\\ ˈchüāi?\\"]])
-
-(defn select-namespace [namespace-name]
-  (swap! runner/state
-         assoc
-         :selected
-         [namespace-name]))
-
-(defonce ui-state (reagent/atom {}))
-
-(defn filtered-ns-names []
-  (let [{:keys [query]} @ui-state
-        query (if (string? query)
-                (str/trim query)
-                "")
-        nss (sort (keys @test-data/test-ns-data))]
-    (if (str/blank? query)
-      nss
-      (filter #(str/includes? (str %) query) nss))))
-
-(defn test-selector-2 [selected]
-  (reagent/with-let [this (reagent/current-component)]
-    (add-watch test-data/test-ns-data ::rerender #(reagent/force-update this))
-    [:section.namespaces
-     [:div.search-bar
-      [:input {:type "search"
-               ;; :auto-focus true
-               :value (:query @ui-state)
-               :on-change (fn [e]
-                            (let [query (.. e -target -value)]
-                              (swap! ui-state assoc :query query)
-                              (swap! runner/state
-                                     assoc
-                                     :selected
-                                     (when-not (str/blank? (str/trim query))
-                                       (filtered-ns-names)))))
-               :placeholder "name space"}]
-      [test-stop-button]]
-     [:div.namespace-selector
-      (for [ns (filtered-ns-names)]
-        ^{:key (str ns)}
-        [:div.namespace-links
-         [:input
-          {:id (str ns)
-           :name (str ns)
-           :type "checkbox"
-           :on-click #(select-namespace ns)}]
-         [:label {:for (str ns)} (str ns)]
-         [:aside (str "3" " runs")]])]]))
-        
-
-(defn history [runs]
-  [:section.history
-   [:div.option
-    (for [{:keys [id nss start done?] :as run} (reverse runs)]
-      (let [sum (runner/run-summary run)]
-        ^{:key id}
-        [:div
-         [:input.toggle {:id id
-                         :type "radio"
-                         :name "history"
-                         :on-change #(swap! ui-state assoc :selected-run run)}]
-         [:label {:for id}
-          (when-not done? [:span [:span.spinner] " "] )
-          [summary sum] " "
-          [reltime start]]]))]])
-
-(defn results []
-  [:section.results
-   (for [ns (:nss (:selected-run @ui-state))]
-     ^{:key (:ns ns)}
-     [ns-run ns])
-   #_[:div
-      [:p "aa-test"]
-      [:code "(= 123 124)"]
-      [:code "(= 123 124)"]]])
-
-(defn test-info []
-  [:section.test-info
-   [:article
-    [:header
-     [:p "Diff/Stacktrace"]]]])
-
-
-(defn app2 []
-  (let [{:keys [selected runs]} @runner/state]
+  (let [{:keys [selected runs]} @runner/state
+        {:keys [selected-run selected-test]} @ui-state]
     [:div
      [:style (styles/inline)]
      [header]
      [:main
-      [test-selector-2]
+      {:class (str "cols-" (col-count))}
+      [test-selector]
       [history runs]
-      [results]
-      [test-info]]]))
+      (when selected-run
+        [results])
+      (when (and selected-run selected-test)
+        [test-info])]]))
 
 (defn render! [element]
-  (reagent-dom/render [app2] element))
+  (reagent-dom/render [app] element))

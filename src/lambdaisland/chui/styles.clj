@@ -70,31 +70,27 @@
          :text-decoration :none
          :line-height 1.5}]
    [:li [:a {:text-decoration :none}]]
-   [:li:hover
-    :li:focus-within
-    :li:focus
-    :li:active
-    :li:hover
-    {:border "1px solid yellow"
-     :background-color "#ffffc4"
-     :padding ".3rem"
-     :text-decoration :none}
-    [:a {:text-decoration :none}]]
    [:main
     {:display :flex
      :width "100%"
      :overflow-x "auto"
      :scroll-snap-type "x mandatory"
      :scrollbar-width :none
-     :background-color :initial
-     :padding-left "20%"}
+     :background-color :initial}
+    [:&.cols-2 [:>section {:width "calc(100vw / 3)"}]]
+    [:&.cols-3
+     [:>section {:width "25vw"}
+      [:&:last-child {:width "50vw"}]]]
+    [:&.cols-4
+     [:>section {:width "20vw"}
+      [:&:last-child {:width "40vw"}]]]
     [:>section {:flex-shrink 0
-                :width "calc(100vw / 3)"
                 :scroll-snap-align :center
                 :scrollbar-width :none
                 :display :flex
                 :flex-direction :column
-                :padding ".5rem"}
+                :padding ".5rem"
+                :overflow "scroll"}
      [:&:hover {:background-color :snow}]]]
    [:.namespaces {:background-color :inherit}]
    [:.fieldset {:border "1px solid black"
@@ -107,7 +103,17 @@
      :font-size "1.1rem"
      :line-height 1.5}]
    [(search-input "::placeholder") {:color :gray}]
-   [:.history { :background-color :inherit}]
+   [:.selection-target
+    [:&:hover {:background-color "#ff8"}]
+    [:&.selected {:background-color "#cfc"}]]
+   [:.history { :background-color :inherit}
+
+    [:.run {:margin-bottom "1rem"}]]
+   [:.section-header {:font-size "1.1rem"
+                      :font-weight "bold"
+                      :width "100%"
+                      :border-bottom "1px solid #000"
+                      :margin 0}]
    [:.test-info { :background-color :initial}]
    [:.namespaces [:+ul {:padding-left "1.5rem"
                         :line-height "1.7rem"}]]
@@ -124,9 +130,11 @@
    [:.search-bar {:display :grid
                   :background-color :whitesmoke
                   :box-shadow "1px 1px 5px whitesmoke"
-                  :grid-template-columns "1fr 12%"
+                  :grid-template-columns "1fr 22%"
                   :grid-auto-flow :column
-                  :border "1px solid whitesmoke"}]
+                  :border "1px solid whitesmoke"
+                  :position :sticky
+                  :top 0}]
    [:.button {:font-variant-caps :all-small-caps
               :font-weight :bold
               :background-color :inherit
@@ -141,14 +149,52 @@
    [:.namespace-links
     {:font-size "1rem"
      :display :flex
-     :justify-content :space-between}
-    [:&:hover {:background-color "#ff8"}]
-    [:* {:padding ".25rem .5rem"}
+     :justify-content :space-between
+     :border-radius "2px"
+     :margin-bottom ".25rem"}
+    [:* {}
      [:&:selected {:background-color :fuchsia}]]
-    [:label {:flex 1
-             :font-family :monospace}]
+    [:input {:display :none}]
+    [:label {:display :flex
+             :justify-content :space-between
+             :width "100%"
+             :padding ".50rem .5rem"}]
     [:aside {:font-style :italic
-             :color :darkgray}]]])
+             :color :darkgray}]
+    [:.skip {:color :darkgray}]]
+   [:.result-viz
+    [:.ns {:border "1px solid #113"
+           :border-radius "4px"
+           :margin-right "3px"
+           :overflow-wrap :break-word
+           :line-height "2rem"}]
+    [:.var {:border-right "1px solid #113"}
+     [:&:first-child {:border-radius "4px 0 0 4p"}]
+     [:&:last-child {:border-style :none}]]
+    [:.assertion
+     {:font-variant-caps :all-small-caps
+      :font-weight :bold
+      :color :darkgray
+      :padding "0 4px"}]
+    [:.selected-ns
+     [:.pass {:color :white :background-color :green}]
+     [:.fail {:color :white :background-color :red}]
+     [:.error {:color :white :background-color :red}]]
+    [:.pass {:background-color washed-green}]
+    [:.fail {:background-color washed-red}]
+    [:.error {:background-color washed-red}]]
+   [:.ns-run-var
+    [:.result-viz-var
+
+     [:.assertion
+      {:font-variant-caps :all-small-caps
+       :font-weight :bold
+       :color :darkgray
+       :padding "0 4px"
+       }]
+     [:.pass {:color :white :background-color :green}]
+     [:.fail {:color :white :background-color :red}]
+     [:.error {:color :white :background-color :red}]]]])
 
 (defmacro inline []
   (garden/css {:pretty-print? false} style2))

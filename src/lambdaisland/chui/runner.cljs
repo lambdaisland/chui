@@ -98,7 +98,7 @@
   once-fixtures and each-fixtures."
   [ns {:keys [meta tests each-fixtures once-fixtures] :as ns-data}]
   (when (and (not (:test/skip meta)) )
-    (when-let [tests (seq (remove (comp :test/skip :meta) tests))]
+    (when-let [tests (seq tests)]
       (concat
        [(report-intor {:type :begin-test-ns :ns ns})
         {:name :begin-ns-update-run
@@ -193,9 +193,11 @@
   ([]
    (let [tests @test-data/test-ns-data]
      (run-tests
-      (if-let [selected (:selected @state)]
+      (if-let [selected (seq (:selected @state))]
         (select-keys tests selected)
-        tests))))
+        (into {}
+              (remove (comp :test/skip :meta val))
+              tests)))))
   ([tests]
    (let [terminate? (atom false)]
      (new-test-run! {:id (random-uuid)
@@ -223,6 +225,7 @@
    (when-let [run (current-run)]
      (when-let [donep (and callback (:donep run))]
        (p/let [ctx donep]
+         (update-run assoc :terminated? true)
          (callback ctx)))
      ((:terminate! run)))))
 

@@ -46,7 +46,9 @@
 
               :else
               m))
-          (assoc-in m [`'~name :meta] meta)
+          (-> m
+              (assoc-in [`'~name :name] `'~name)
+              (assoc-in [`'~name :meta] `'~meta))
           vars)
          m)))
    {}
