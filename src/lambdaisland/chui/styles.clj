@@ -35,11 +35,7 @@
    [:.run.pass [:h1 {:background-color washed-green}]]
    [:.ns.error {:background-color washed-red}]
    [:.ns.fail {:background-color washed-red}]
-   [:.ns.pass {:background-color washed-green}]
-   [:.ns
-    [:h2 {:border-bottom "1px solid #666"}]
-    [:.filename {:float "right"
-                 :color "#777"}]]])
+   [:.ns.pass {:background-color washed-green}]])
 
 (selectors/defselector input)
 
@@ -108,7 +104,7 @@
     [:&.selected {:background-color "#cfc"}]]
    [:.history { :background-color :inherit}
 
-    [:.run {:margin-bottom "1rem"}]]
+    [:.run {:margin-bottom "2rem"}]]
    [:.section-header {:font-size "1.1rem"
                       :font-weight "bold"
                       :width "100%"
@@ -183,6 +179,10 @@
     [:.pass {:background-color washed-green}]
     [:.fail {:background-color washed-red}]
     [:.error {:background-color washed-red}]]
+   [:.ns-run
+    {:margin-bottom "2rem"}
+    [:.filename {:float :right
+                 :color :darkgray}]]
    [:.ns-run-var
     [:.result-viz-var
 

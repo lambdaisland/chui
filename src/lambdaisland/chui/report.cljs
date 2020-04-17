@@ -1,89 +1,105 @@
 (ns lambdaisland.chui.report
   (:require [clojure.pprint :as pprint]
             [lambdaisland.deep-diff2 :as ddiff]
+            [lambdaisland.deep-diff2.puget.printer :as puget-printer]
             [lambdaisland.deep-diff2.printer-impl :as printer-impl]
             [lambdaisland.deep-diff2.puget.color.html]))
 
-;; (def narrow-printer (ddiff/printer {:color-markup :html-inline}))
+(def html-printer (ddiff/printer {:color-markup :html-inline}))
 
-;; (printer-impl/format-doc (ddiff/diff {:a 1 :b 2} {:a 1 :b 3}) narrow-printer)
+(defn pprint-str [fipp-doc]
+  (with-out-str
+    (printer-impl/print-doc fipp-doc html-printer)))
 
-;; (deep-diff/diff {:a 1} {:b 1})
 
-;; (defn pprint [code]
-;;   [:pre
-;;    [:code
-;;     (with-out-str (clojure.pprint/pprint code))]])
+(defn pprint-doc [doc]
+  [:pre
+   [:code {:dangerouslySetInnerHTML {:__html (pprint-str doc)}}]])
 
-;; (defn assertion-type
-;;   "Given a clojure.test event, return the first symbol in the expression inside (is)."
-;;   [m]
-;;   (if-let [s (and (seq? (:expected m)) (seq (:expected m)))]
-;;     (first s)
-;;     :default))
+(defn assertion-type
+  "Given a clojure.test event, return the first symbol in the expression inside (is)."
+  [m]
+  (if-let [s (and (seq? (:expected m)) (seq (:expected m)))]
+    (first s)
+    :default))
 
-;; (defmulti format-expr assertion-type)
+(defmulti print-expr assertion-type)
 
-;; (defmethod format-expr :default [m]
-;;   [:div
-;;    (when (contains? m :expected)
-;;      [:span "Expected:" [pprint (:expected m)]])
-;;    (when (contains? m :actual)
-;;      [:span "Actual:" [pprint (:actual m)]])])
+(defmethod print-expr :default [m]
+  [pprint-doc
+   [:span
+    "Expected:" :line
+    [:nest (puget-printer/format-doc html-printer (:expected m))]
+    :break
+    "Actual:" :line
+    [:nest (puget-printer/format-doc html-printer (:actual m))]]])
 
-;; (defn format-expression [m]
-;;   (if (and (seq? (second (:actual m)))
-;;            (> (count (second (:actual m))) 2))
-;;     ;; :actual is of the form (not (= ...))
-;;     (let [[_ expected & actuals] (-> m :actual second)]
-;;       [:div
-;;        [:div "Expected:"]
-;;        [pprint expected]
-;;        [:div "Actual:"]
-;;        (into [:div]
-;;              (for [actual actuals]
-;;                (output/format-doc ((jit lambdaisland.deep-diff/diff) expected actual)
-;;                                   printer)))])
-;;     (output/print-doc
-;;      [:span
-;;       "Expected:" :line
-;;       [:nest (output/format-doc (:expected m) printer)]
-;;       :break
-;;       "Actual:" :line
-;;       [:nest (output/format-doc (:actual m) printer)]])))
+(defn print-expression [m]
 
-;; (defmethod format-expr '= [m]
-;;   (format-expression m))
+  (if (and (seq? (second (:actual m)))
+           (> (count (second (:actual m))) 2))
+    ;; :actual is of the form (not (= ...))
 
-;; (defmethod format-expr '=? [m]
-;;   (format-expression m))
+    (let [[_ expected & actuals] (-> m :actual second)]
+      [pprint-doc
+       [:span
+        "Expected:" :line
+        [:nest (puget-printer/format-doc html-printer expected)]
+        :break
+        "Actual:" :line
+        (into [:nest]
+              (interpose :break)
+              (for [actual actuals]
+                (puget-printer/format-doc
+                 html-printer
+                 (ddiff/diff expected actual))))]])
+    [pprint-doc
+     [:span
+      "Expected:" :line
+      [:nest (puget-printer/format-doc html-printer (:expected m))]
+      :break
+      "Actual:" :line
+      [:nest (puget-printer/format-doc html-printer (:actual m))]]]))
 
-;; (defmulti fail-summary :type :hierarchy #'hierarchy/hierarchy)
+(defmethod print-expr '= [m]
+  (print-expression m))
 
-;; (defmethod fail-summary :default [_])
+(defmethod print-expr '=? [m]
+  (print-expression m))
 
-;; (defmethod fail-summary :kaocha/fail-type [{:keys [testing-contexts testing-vars] :as m}]
-;;   (println (str "\n" (output/colored :red "FAIL") " in") (testing-vars-str m))
-;;   (when (seq testing-contexts)
-;;     (println (str/join " " (reverse testing-contexts))))
-;;   (when-let [message (:message m)]
-;;     (println message))
-;;   (if-let [expr (::printed-expression m)]
-;;     (print expr)
-;;     (format-expr m))
-;;   (print-output m))
+(defmulti fail-summary :type)
 
-;; (defmethod fail-summary :error [{:keys [testing-contexts testing-vars] :as m}]
-;;   (println (str "\n" (output/colored :red "ERROR") " in") (testing-vars-str m))
-;;   (when (seq testing-contexts)
-;;     (println (str/join " " (reverse testing-contexts))))
-;;   (when-let [message (:message m)]
-;;     (println message))
-;;   (if-let [expr (::printed-expression m)]
-;;     (print expr)
-;;     (when-let [actual (:actual m)]
-;;       (print "Exception: ")
-;;       (if (throwable? actual)
-;;         (stacktrace/print-cause-trace actual t/*stack-trace-depth*)
-;;         (prn actual))))
-;;   (print-output m))
+(defmethod fail-summary :default [_])
+
+(defmethod fail-summary :fail [{:keys [testing-contexts testing-vars] :as m}]
+  [:div
+   "FAIL"
+   ;; (println (str "\n" (output/colored :red "FAIL") " in") (testing-vars-str m))
+   ;; (when (seq testing-contexts)
+   ;;   (println (str/join " " (reverse testing-contexts))))
+   ;; (when-let [message (:message m)]
+   ;;   (println message))
+   ;; (if-let [expr (::printed-expression m)]
+   ;;   (print expr)
+   ;;   (print-expr m))
+   ;; (print-output m)
+   [print-expr m]]
+  )
+
+(defmethod fail-summary :error [{:keys [testing-contexts testing-vars] :as m}]
+  [:div
+   "ERROR"]
+  ;; (println (str "\n" (output/colored :red "ERROR") " in") (testing-vars-str m))
+  ;; (when (seq testing-contexts)
+  ;;   (println (str/join " " (reverse testing-contexts))))
+  ;; (when-let [message (:message m)]
+  ;;   (println message))
+  ;; (if-let [expr (::printed-expression m)]
+  ;;   (print expr)
+  ;;   (when-let [actual (:actual m)]
+  ;;     (print "Exception: ")
+  ;;     (if (throwable? actual)
+  ;;       (stacktrace/print-cause-trace actual t/*stack-trace-depth*)
+  ;;       (prn actual))))
+  ;; (print-output m)
+  )

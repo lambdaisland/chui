@@ -3,10 +3,12 @@
             [goog.date.relative :as date-relative]
             [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.test-data :as test-data]
+            [lambdaisland.chui.report :as report]
             [lambdaisland.glogi :as log]
             [reagent.core :as reagent]
             [reagent.dom :as reagent-dom]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [lambdaisland.deep-diff2 :as ddiff])
   (:require-macros [lambdaisland.chui.styles :as styles])
   (:import (goog.i18n DateTimeFormat)))
 
@@ -43,6 +45,10 @@
     (if (str/blank? query)
       nss
       (filter #(str/includes? (str (:name %)) query) nss))))
+
+(defn selected-run []
+  (or (:selected-run @ui-state)
+      (last (:runs @runner/state))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -107,25 +113,26 @@
 (defn ns-run [{:keys [ns vars] :as the-ns}]
   (let [{:keys [selected-test only-failing?]} @ui-state
         sum (runner/ns-summary the-ns)]
-    [:section.ns-run
-     [:h2.section-header (str ns)]
-     [:span.filename (:file (:meta (first vars)))]
-     [:div
-      (for [{:keys [name assertions] :as var-info} vars
-            :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
-            :let [selected? (= name (:name selected-test))]]
-        ^{:key (str name)}
-        [:div.ns-run-var.selection-target
-         {:class (when selected?
-                   "selected")
-          :on-click #(swap! ui-state
-                            (fn [s]
-                              (if selected?
-                                (dissoc s :selected-test)
-                                (assoc s :selected-test var-info))))}
-         (str name)
-         [:div.result-viz-var
-          [result-viz-var var-info]]])]]))
+    (when (or (not only-failing?) (runner/fail? sum))
+      [:section.ns-run
+       [:h2.section-header (str ns)]
+       [:span.filename (:file (:meta (first vars)))]
+       [:div
+        (for [{var-name :name :keys [assertions] :as var-info} vars
+              :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
+              :let [selected? (= var-name (:name selected-test))]]
+          ^{:key (str var-name)}
+          [:div.ns-run-var.selection-target
+           {:class (when selected?
+                     "selected")
+            :on-click #(swap! ui-state
+                              (fn [s]
+                                (if selected?
+                                  (dissoc s :selected-test)
+                                  (assoc s :selected-test var-info))))}
+           (name var-name)
+           [:div.result-viz-var
+            [result-viz-var var-info]]])]])))
 
 (defn test-stop-button []
   (let [{:keys [runs]} @runner/state
@@ -151,7 +158,7 @@
 
 (defn results []
   [:section.column.results
-   (for [ns (:nss (:selected-run @ui-state))]
+   (for [ns (:nss (selected-run))]
      ^{:key (:ns ns)}
      [ns-run ns])])
 
@@ -261,22 +268,26 @@
         {:keys [name assertions meta]} selected-test]
     [:section.column.test-info
      [:h2.section-header name]
-     (into [:div] (map (fn [m] [:div (pr-str m)])) assertions)
+     (into [:div]
+           (map (fn [m] [report/fail-summary m]))
+           assertions)
      ]))
 
 (defn col-count []
-  (let [{:keys [selected-run selected-test]} @ui-state]
+  (let [runs? (seq (:runs @runner/state))
+        {:keys [selected-test]} @ui-state]
     (cond
-      (and selected-run selected-test)
+      (and runs? selected-test)
       4
-      selected-run
+      runs?
       3
       :else
       2)))
 
 (defn app []
   (let [{:keys [selected runs]} @runner/state
-        {:keys [selected-run selected-test]} @ui-state]
+        {:keys [selected-test]} @ui-state
+        runs? (seq runs)]
     [:div
      [:style (styles/inline)]
      [header]
@@ -284,9 +295,9 @@
       {:class (str "cols-" (col-count))}
       [test-selector]
       [history runs]
-      (when selected-run
+      (when runs?
         [results])
-      (when (and selected-run selected-test)
+      (when (and runs? selected-test)
         [test-info])]]))
 
 (defn render! [element]
