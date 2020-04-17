@@ -101,8 +101,8 @@
 (defn test-stop-button []
   (let [{:keys [runs]} @runner/state]
     (if (false? (:done? (last runs)))
-      [:button {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop test run"]
-      [:button {:on-click #(runner/run-tests)} "Run Tests"])))
+      [:button.button.stop-tests {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop"]
+      [:button.button.run-tests {:on-click #(runner/run-tests)} "Run"])))
 
 (defn app []
   (let [{:keys [selected runs]} @runner/state]
@@ -175,30 +175,32 @@
   (reagent/with-let [this (reagent/current-component)]
     (add-watch test-data/test-ns-data ::rerender #(reagent/force-update this))
     [:section.namespaces
-     [:input {:type "search"
-              ;; :auto-focus true
-              :value (:query @ui-state)
-              :on-change (fn [e]
-                           (let [query (.. e -target -value)]
-                             (swap! ui-state assoc :query query)
-                             (swap! runner/state
-                                    assoc
-                                    :selected
-                                    (when-not (str/blank? (str/trim query))
-                                      (filtered-ns-names)))))
-              :placeholder "test.name.space"}]
-     [test-stop-button]
+     [:div.search-bar
+      [:input {:type "search"
+               ;; :auto-focus true
+               :value (:query @ui-state)
+               :on-change (fn [e]
+                            (let [query (.. e -target -value)]
+                              (swap! ui-state assoc :query query)
+                              (swap! runner/state
+                                     assoc
+                                     :selected
+                                     (when-not (str/blank? (str/trim query))
+                                       (filtered-ns-names)))))
+               :placeholder "name space"}]
+      [test-stop-button]]
      [:div.namespace-selector
       (for [ns (filtered-ns-names)]
         ^{:key (str ns)}
-        [:div
-         [:input.namespace-links
+        [:div.namespace-links
+         [:input
           {:id (str ns)
            :name (str ns)
            :type "checkbox"
            :on-click #(select-namespace ns)}]
-         [:label {:for (str ns)} (str ns)]]
-        )]]))
+         [:label {:for (str ns)} (str ns)]
+         [:aside (str "3" " runs")]])]]))
+        
 
 (defn history [runs]
   [:section.history

@@ -41,6 +41,10 @@
     [:.filename {:float "right"
                  :color "#777"}]]])
 
+(selectors/defselector input)
+
+(def search-input (partial input (selectors/attr= "type" "search")))
+
 (def style2
   [[:* {:box-sizing "border-box"}]
    [:html {:color "#333"
@@ -81,6 +85,7 @@
      :width "100%"
      :overflow-x "auto"
      :scroll-snap-type "x mandatory"
+     :scrollbar-width :none
      :background-color :initial
      :padding-left "20%"}
     [:>section {:flex-shrink 0
@@ -90,16 +95,18 @@
                 :display :flex
                 :flex-direction :column
                 :padding ".5rem"}
-     [:&:focus-within {:background-color :lightyellow}]]]
+     [:&:hover {:background-color :snow}]]]
    [:.namespaces {:background-color :inherit}]
    [:.fieldset {:border "1px solid black"
                 :margin-top ".3rem"
                 :margin-bottom ".3rem"}]
-   [(selectors/attr= "type" "search")
+   [(search-input)
     {:padding ".5rem"
      :border "none"
      :width "100%"
-     :font-size "1.125rem"}]
+     :font-size "1.1rem"
+     :line-height 1.5}]
+   [(search-input "::placeholder") {:color :gray}]
    [:.history { :background-color :inherit}]
    [:.test-info { :background-color :initial}]
    [:.namespaces [:+ul {:padding-left "1.5rem"
@@ -110,8 +117,38 @@
    [:.toggle {:position :absolute
               :left "-100vw"}]
    [:.namespace-selector {:display :flex
-                          :flex-direction :column}]
-   [:.active {:font-weight :bold}]])
+                          :flex-direction :column
+                          :margin-top ".5rem"
+                          :line-height 1.125}]
+   [:.active {:font-weight :bold}]
+   [:.search-bar {:display :grid
+                  :background-color :whitesmoke
+                  :box-shadow "1px 1px 5px whitesmoke"
+                  :grid-template-columns "1fr 12%"
+                  :grid-auto-flow :column
+                  :border "1px solid whitesmoke"}]
+   [:.button {:font-variant-caps :all-small-caps
+              :font-weight :bold
+              :background-color :inherit
+              :border :none
+              :font-size "1.1rem"}
+    [:&:hover {:color :white
+               :cursor :pointer}]]
+   [:.run-tests {:color :silver}
+    [:&:hover :&:active {:background-color :lightgreen}]]
+   [:.stop-tests {:color :coral}
+    [:&:hover {:background-color :lightcoral}]]
+   [:.namespace-links
+    {:font-size "1rem"
+     :display :flex
+     :justify-content :space-between}
+    [:&:hover {:background-color "#ff8"}]
+    [:* {:padding ".25rem .5rem"}
+     [:&:selected {:background-color :fuchsia}]]
+    [:label {:flex 1
+             :font-family :monospace}]
+    [:aside {:font-style :italic
+             :color :darkgray}]]])
 
 (defmacro inline []
   (garden/css {:pretty-print? false} style2))
