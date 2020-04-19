@@ -97,6 +97,13 @@
         "E"
         "?")])])
 
+(defn result-viz-var2 [{var-name :name :keys [assertions]}]
+  [:output.var
+   {:title (str var-name)}
+   (for [[i {:keys [type]}] (map vector (range) assertions)]
+     ^{:key (str i)}
+     [:output.assertion {:class (name type)}])])
+
 (defn result-viz [nss selected]
   [:div.result-viz
    (for [{:keys [ns done? vars]} nss]
@@ -108,7 +115,20 @@
                 "selected-ns")}
       (for [var-info vars]
         ^{:key (str (:name var-info))}
-        [result-viz-var var-info])])])
+        [result-viz-var2 var-info])])])
+
+(defn result-viz2 [nss selected]
+  [:section.test-results
+   (for [{:keys [ns vars]} nss]
+     ^{:key (str ns)}
+     [:span.ns
+      {:title ns
+       :class (when (or (empty? selected)
+                        (contains? selected ns))
+                "selected-ns")}
+      (for [var-info vars]
+        ^{:key (str (:name var-info))}
+        [result-viz-var2 var-info])])])
 
 (defn ns-run [{:keys [ns vars] :as the-ns}]
   (let [{:keys [selected-test only-failing?]} @ui-state
@@ -131,8 +151,8 @@
                                   (dissoc s :selected-test)
                                   (assoc s :selected-test var-info))))}
            (name var-name)
-           [:div.result-viz-var
-            [result-viz-var var-info]]])]])))
+           [:section.result-viz-var
+            [result-viz-var2 var-info]]])]])))
 
 (defn test-stop-button []
   (let [{:keys [runs]} @runner/state
@@ -186,8 +206,8 @@
              (when terminated?  " (aborted)")]
             [result-viz (if only-failing?
                           (filter #(runner/fail? (runner/ns-summary %)) nss)
-                          nss) selected]
-            ]])))]])
+                          nss) selected]]])))]])
+            
 
 (defn test-selector []
   (reagent/with-let [this (reagent/current-component)
@@ -270,8 +290,8 @@
      [:h2.section-header name]
      (into [:div]
            (map (fn [m] [report/fail-summary m]))
-           assertions)
-     ]))
+           assertions)]))
+     
 
 (defn col-count []
   (let [runs? (seq (:runs @runner/state))
