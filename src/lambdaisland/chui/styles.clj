@@ -75,8 +75,8 @@
      :background-color :initial}
     [:&.cols-2 [:>section {:width "calc(100vw / 3)"}]]
     [:&.cols-3
-     [:>section {:width "25vw"}
-      [:&:last-child {:width "50vw"}]]]
+     [:>section {:flex 1}
+      [:&:last-child {:flex 2}]]]
     [:&.cols-4
      [:>section {:width "20vw"}
       [:&:last-child {:width "40vw"}]]]
@@ -99,12 +99,11 @@
      :font-size "1.1rem"
      :line-height 1.5}]
    [(search-input "::placeholder") {:color :gray}]
+
    [:.selection-target
     [:&:hover {:background-color "#ff8"}]
     [:&.selected {:background-color "#cfc"}]]
-   [:.history { :background-color :inherit}
-
-    [:.run {:margin-bottom "2rem"}]]
+   [:.history { :background-color :inherit}]
    [:.section-header {:font-size "1.1rem"
                       :font-weight "bold"
                       :width "100%"
@@ -138,25 +137,27 @@
               :font-size "1.1rem"}
     [:&:hover {:color :white
                :cursor :pointer}]]
-   [:.run-tests {:color :silver}
+   [:.run-tests {:color :silver
+                 :line-height ".9"}
     [:&:hover :&:active {:background-color :lightgreen}]]
    [:.stop-tests {:color :coral}
     [:&:hover {:background-color :lightcoral}]]
    [:.namespace-links
     {:font-size "1rem"
      :display :flex
+     ;; :flex-flow "column wrap"
      :justify-content :space-between
-     :border-radius "2px"
-     :margin-bottom ".25rem"}
+     :border-radius "2px"}
     [:* {}
      [:&:selected {:background-color :fuchsia}]]
-    [:input {:display :none}]
-    [:label {:display :flex
-             :justify-content :space-between
-             :width "100%"
-             :padding ".50rem .5rem"}]
-    [:aside {:font-style :italic
-             :color :darkgray}]
+    [:input {:display :none
+             :width :max-content}]
+    [:label {:padding ".50rem .5rem"
+             :flex 1}]
+    [:aside {:padding ".50rem .5rem"}]
+    [:small {:font-style :italic
+             :color :darkgray
+             :white-space :nowrap}]
     [:.skip {:color :darkgray}]]
    [:.result-viz
     [:.ns {:border "1px solid #113"
@@ -190,8 +191,8 @@
       {:font-variant-caps :all-small-caps
        :font-weight :bold
        :color :darkgray
-       :padding "0 4px"
-       }]
+       :padding "0 4px"}]
+       
      [:.pass {:color :white :background-color :green}]
      [:.fail {:color :white :background-color :red}]
      [:.error {:color :white :background-color :red}]]]])
