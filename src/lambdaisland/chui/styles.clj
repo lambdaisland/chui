@@ -192,10 +192,58 @@
        :font-weight :bold
        :color :darkgray
        :padding "0 4px"}]
-       
      [:.pass {:color :white :background-color :green}]
      [:.fail {:color :white :background-color :red}]
-     [:.error {:color :white :background-color :red}]]]])
+     [:.error {:color :white :background-color :red}]]]
+
+   [:.run
+    {:display :grid
+     :grid-template-columns "1fr auto"
+     :grid-template-rows "auto auto auto"
+     :border "1px solid whitesmoke"
+     :box-shadow "1px 1px 5px whitesmoke"
+     :margin-bottom "1rem"}
+    [:p {:margin 0}]
+    [:.run-header {:padding ".5rem 1rem"
+                   :grid-column-start 1
+                   :background-color :initial ;fix
+                   :color "#333"              ;fix
+                   :border-radius :initial    ;fix
+                   :justify-content :initial  ;fix
+                   :grid-column-end 3
+                   :display :grid
+                   :grid-template-columns :subgrid}
+     [:p {:grid-column-start 1}]
+     [:small {:grid-column-start 2
+              :color :gray}]]
+    [:footer {:padding ".5rem 1rem"
+              :grid-column "1 /span 2"
+              :grid-row-start 3}]
+    [:progress {:grid-column "1 / span 2"
+                :width "100%"
+                :height "4px"
+                :margin-top ".5rem"
+                :margin-bottom ".5rem"}]]
+   [:.test-results {:box-sizing :padding-box
+                    :grid-column "1 / span 2"
+                    :display :flex
+                    :flex-wrap :wrap
+                    :justify-content :flex-start
+                    :margin "0 1rem"
+                    :gap ".2rem"
+                    :padding-top ".5rem"
+                    :padding-bottom ".5rem"}]
+   [:.var {:display :inline-flex
+           :margin-right ".2rem"
+           :border "1px solid darkslategray"
+           :padding "1px"
+           :width :inherit
+           :height :inherit}]
+   [:output {:width ".2rem"
+             :height "1rem"}
+    [:.pass {:background-color :limegreen}]
+    [:.fail {:background-color :gold}]
+    [:.error {:background-color :tomato}]]])
 
 (defmacro inline []
   (garden/css {:pretty-print? false} style2))

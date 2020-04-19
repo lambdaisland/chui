@@ -118,7 +118,7 @@
         [result-viz-var2 var-info])])])
 
 (defn result-viz2 [nss selected]
-  [:section.test-results
+  [:section.test-results-ns
    (for [{:keys [ns vars]} nss]
      ^{:key (str ns)}
      [:span.ns
@@ -129,6 +129,7 @@
       (for [var-info vars]
         ^{:key (str (:name var-info))}
         [result-viz-var2 var-info])])])
+
 
 (defn ns-run [{:keys [ns vars] :as the-ns}]
   (let [{:keys [selected-test only-failing?]} @ui-state
@@ -191,23 +192,26 @@
             :let [selected? (= (:id run) (:id selected-run))]]
         (let [sum (runner/run-summary run)]
           ^{:key id}
-          [:div.run.selection-target
+          [:article.run.selection-target
            {:class (when selected? "selected")}
-           [:div {:for id
-                  :on-click (fn [_]
-                              (swap! ui-state
-                                     (fn [s]
-                                       (if selected?
-                                         (dissoc s :selected-run)
-                                         (assoc s :selected-run run)))))}
-            [:h2.section-header {:title (str (human-time-str start) " (" (reltime-str start) ")")}
-             [summary sum]  " "
-             (when-not done?  " (running)")
-             (when terminated?  " (aborted)")]
-            [result-viz (if only-failing?
-                          (filter #(runner/fail? (runner/ns-summary %)) nss)
-                          nss) selected]]])))]])
-            
+           [:header.run-header
+            [:progress {:max (:tests sum) :value 2}] ;FIX value
+            [:p (reltime-str start)]
+            [:small
+             (when-not done? "Running")
+             (when terminated? "Aborted")]]
+           [:section.test-results {:for id
+                                   :on-click (fn [_]
+                                               (swap! ui-state
+                                                      (fn [s]
+                                                        (if selected?
+                                                          (dissoc s :selected-run)
+                                                          (assoc s :selected-run run)))))}
+            [result-viz2 (if only-failing?
+                           (filter #(runner/fail? (runner/ns-summary %)) nss)
+                           nss) selected]]
+           [:footer
+            [:p [summary sum]]]])))]])
 
 (defn test-selector []
   (reagent/with-let [this (reagent/current-component)
