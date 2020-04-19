@@ -82,22 +82,6 @@
     :else "pass"))
 
 (defn result-viz-var [{var-name :name :keys [assertions]}]
-  [:span.var
-   {:title (str var-name)}
-   (for [[i {:keys [type] :as ass}] (map vector (range) assertions)]
-     ^{:key (str i)}
-     [:span.assertion
-      {:class (name type)}
-      (case type
-        :pass
-        " "
-        :fail
-        "F"
-        :error
-        "E"
-        "?")])])
-
-(defn result-viz-var2 [{var-name :name :keys [assertions]}]
   [:output.var
    {:title (str var-name)}
    (for [[i {:keys [type]}] (map vector (range) assertions)]
@@ -105,19 +89,6 @@
      [:output.assertion {:class (name type)}])])
 
 (defn result-viz [nss selected]
-  [:div.result-viz
-   (for [{:keys [ns done? vars]} nss]
-     ^{:key (str ns)}
-     [:span.ns
-      {:title ns
-       :class (when (or (empty? selected)
-                        (contains? selected ns))
-                "selected-ns")}
-      (for [var-info vars]
-        ^{:key (str (:name var-info))}
-        [result-viz-var2 var-info])])])
-
-(defn result-viz2 [nss selected]
   [:section.test-results-ns
    (for [{:keys [ns vars]} nss]
      ^{:key (str ns)}
@@ -128,8 +99,7 @@
                 "selected-ns")}
       (for [var-info vars]
         ^{:key (str (:name var-info))}
-        [result-viz-var2 var-info])])])
-
+        [result-viz-var var-info])])])
 
 (defn ns-run [{:keys [ns vars] :as the-ns}]
   (let [{:keys [selected-test only-failing?]} @ui-state
@@ -153,7 +123,7 @@
                                   (assoc s :selected-test var-info))))}
            (name var-name)
            [:section.result-viz-var
-            [result-viz-var2 var-info]]])]])))
+            [result-viz-var var-info]]])]])))
 
 (defn test-stop-button []
   (let [{:keys [runs]} @runner/state
@@ -207,9 +177,9 @@
                                                         (if selected?
                                                           (dissoc s :selected-run)
                                                           (assoc s :selected-run run)))))}
-            [result-viz2 (if only-failing?
-                           (filter #(runner/fail? (runner/ns-summary %)) nss)
-                           nss) selected]]
+            [result-viz (if only-failing?
+                          (filter #(runner/fail? (runner/ns-summary %)) nss)
+                          nss) selected]]
            [:footer
             [:p [summary sum]]]])))]])
 
