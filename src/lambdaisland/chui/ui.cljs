@@ -195,7 +195,7 @@
           [:article.run.selection-target
            {:class (when selected? "selected")}
            [:header.run-header
-            [:progress {:max (:tests sum) :value 2}] ;FIX value
+            [:progress {:max (:test-count run) :value (:tests (runner/run-summary run))}]
             [:p (reltime-str start)]
             [:small
              (when-not done? "Running")
@@ -295,7 +295,7 @@
      (into [:div]
            (map (fn [m] [report/fail-summary m]))
            assertions)]))
-     
+
 
 (defn col-count []
   (let [runs? (seq (:runs @runner/state))

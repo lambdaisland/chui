@@ -130,7 +130,6 @@
               (log/error :failed-interceptor-chain (dissoc data :exception)
                          :exception (:exception data))))})
 
-#_
 ;; for debugging / visualizing progress
 (defn slowdown-intor [ms]
   {:name ::slowdown
@@ -201,6 +200,7 @@
   ([tests]
    (let [terminate? (atom false)]
      (new-test-run! {:id (random-uuid)
+                     :test-count (apply + (map (comp  count :tests val) tests))
                      :terminate! #(reset! terminate? true)
                      :nss []
                      :ctx {}
@@ -210,7 +210,7 @@
      (let [ctx-promise (-> {::intor/terminate? terminate?
                             ::intor/on-context #(update-run assoc :ctx %)}
                            (intor/enqueue [log-error-intor])
-                           (intor/enqueue (mapcat #(apply ns-intors %) tests))
+                           (intor/enqueue #_(interpose (slowdown-intor 300)) (mapcat #(apply ns-intors %) tests))
                            intor/execute)]
        (update-run assoc :donep ctx-promise)
        (p/let [ctx ctx-promise]

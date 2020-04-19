@@ -71,35 +71,50 @@
 
 (defmethod fail-summary :default [_])
 
-(defmethod fail-summary :fail [{:keys [testing-contexts testing-vars] :as m}]
-  [:div
-   "FAIL"
-   ;; (println (str "\n" (output/colored :red "FAIL") " in") (testing-vars-str m))
-   ;; (when (seq testing-contexts)
-   ;;   (println (str/join " " (reverse testing-contexts))))
-   ;; (when-let [message (:message m)]
-   ;;   (println message))
-   ;; (if-let [expr (::printed-expression m)]
-   ;;   (print expr)
-   ;;   (print-expr m))
-   ;; (print-output m)
-   [print-expr m]]
-  )
+(defn testing-vars-str
+  "Returns a string representation of the current test. Renders names
+  in :testing-vars as a list, then the source file and line of current
+  assertion."
+  [{:keys [file line testing-vars] :as m}]
+  (str
+   ;; Uncomment to include namespace in failure report:
+   ;;(ns-name (:ns (meta (first *testing-vars*)))) "/ "
+   (and (seq testing-vars)
+        (reverse (map #(:name (meta %)) testing-vars)))
+   (when file
+     (str " (" file
+          (when line
+            (str ":" line))
+          ")"))))
 
-(defmethod fail-summary :error [{:keys [testing-contexts testing-vars] :as m}]
+(defmethod fail-summary :pass [{:keys [testing-contexts testing-vars expected message] :as m}]
   [:div
-   "ERROR"]
-  ;; (println (str "\n" (output/colored :red "ERROR") " in") (testing-vars-str m))
-  ;; (when (seq testing-contexts)
-  ;;   (println (str/join " " (reverse testing-contexts))))
-  ;; (when-let [message (:message m)]
-  ;;   (println message))
-  ;; (if-let [expr (::printed-expression m)]
-  ;;   (print expr)
-  ;;   (when-let [actual (:actual m)]
-  ;;     (print "Exception: ")
-  ;;     (if (throwable? actual)
-  ;;       (stacktrace/print-cause-trace actual t/*stack-trace-depth*)
-  ;;       (prn actual))))
-  ;; (print-output m)
-  )
+   "PASS in " (testing-vars-str m)
+   (when (seq testing-contexts)
+     (for [ctx (reverse testing-contexts)]
+       [:div ctx]))
+   (when message
+     [:div message])
+   [pprint-doc
+    (puget-printer/format-doc html-printer expected)]])
+
+(defmethod fail-summary :fail [{:keys [testing-contexts testing-vars message] :as m}]
+  [:div
+   "FAIL in " (testing-vars-str m)
+   (when (seq testing-contexts)
+     (for [ctx (reverse testing-contexts)]
+       [:div ctx]))
+   (when message
+     [:div message])
+   [print-expr m]])
+
+(defmethod fail-summary :error [{:keys [testing-contexts testing-vars message] :as m}]
+  [:div
+   "ERROR in " (testing-vars-str m)
+   (when (seq testing-contexts)
+     (for [ctx (reverse testing-contexts)]
+       [:div ctx]))
+   (when message
+     [:div message])
+   (pr-str (:expected m)) [:br]
+   (pr-str (:actual m))])
