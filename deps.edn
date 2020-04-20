@@ -6,7 +6,7 @@
   com.bhauman/cljs-test-display {:mvn/version "0.1.1"}
   reagent                       {:mvn/version "0.10.0"}
   lambdaisland/glogi            {:mvn/version "1.0-60"}
-  lambdaisland/deep-diff2       {:mvn/version "2.0.0-84"}
+  lambdaisland/deep-diff2       {:mvn/version "2.0.0-93"}
   kitchen-async                 {:mvn/version "0.1.0-SNAPSHOT"}}
 
  :aliases

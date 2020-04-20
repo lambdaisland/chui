@@ -340,7 +340,10 @@
   [:section.column
    (if-let [test (selected-test)]
      [test-assertions test]
-     (map (fn [test] [test-assertions test]) (failing-tests)))])
+     (map (fn [test]
+            ^{:key (:name test)}
+            [test-assertions test])
+          (failing-tests)))])
 
 (defn col-count []
   (let [runs? (seq (:runs @runner/state))

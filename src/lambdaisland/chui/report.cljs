@@ -35,7 +35,6 @@
     [:nest (puget-printer/format-doc html-printer (:actual m))]]])
 
 (defn print-expression [m]
-
   (if (and (seq? (second (:actual m)))
            (> (count (second (:actual m))) 2))
     ;; :actual is of the form (not (= ...))
@@ -102,7 +101,8 @@
   [:div
    "FAIL in " (testing-vars-str m)
    (when (seq testing-contexts)
-     (for [ctx (reverse testing-contexts)]
+     (for [[i ctx] (map vector (range) (reverse testing-contexts))]
+       ^{:key (str i)}
        [:div ctx]))
    (when message
      [:div message])
