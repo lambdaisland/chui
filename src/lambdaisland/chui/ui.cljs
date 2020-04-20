@@ -108,10 +108,12 @@
         [result-viz-var var-info])])])
 
 (defn ns-run [{:keys [ns vars]
-                 :as the-ns}]
+               :as the-ns}]
   (let [{:keys [selected-test only-failing?]} @ui-state
-        sum (runner/ns-summary the-ns)]
-    (when (or (not only-failing?) (runner/fail? sum))
+        sum (runner/ns-summary the-ns)
+        error? (runner/error? sum)
+        fail? (runner/fail? sum)]
+    (when (or (not only-failing?) fail?)
       [:article.ns-run
        [:header.ns-run--header
         [:h2 (str ns)]
@@ -121,8 +123,13 @@
               :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
               :let [selected? (= var-name (:name selected-test))]]
           ^{:key (str var-name)}
-          [:article.ns-run-var.selection-target.fail ;FIX fail class
-           {:class (when selected? "selected")
+          [:article.ns-run-var.selection-target
+           {:class (str/join " "
+                             [(when selected? "selected")
+                              (cond
+                                error? "error"
+                                fail?  "fail"
+                                :else  "pass")])
             :on-click #(swap! ui-state
                               (fn [s]
                                 (if selected?
@@ -130,7 +137,9 @@
                                   (assoc s :selected-test var-info))))}
            [:header
             [:h3.ns-run--assertion (name var-name)]
-            [:p.ns-run--result [:strong "Fail"]]] ;FIX
+            [:p.ns-run--result [:strong (cond error? "Error"
+                                              fail?  "Fail"
+                                              :else  "Pass")]]]
            [:output
             [:h4 ""]
             [:code.expected ""]
