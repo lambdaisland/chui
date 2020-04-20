@@ -3,8 +3,9 @@
             [garden.stylesheet :as stylesheet]
             [garden.selectors :as selectors]))
 
-(def washed-red "#FFDFDF")
-(def washed-green "#E8FDF5")
+(def fail-color  "orange")
+(def error-color "crimson")
+(def pass-color  "#29908a")
 
 (selectors/defselector input)
 
@@ -128,39 +129,6 @@
              :color :darkgray
              :white-space :nowrap}]
     [:.skip {:color :darkgray}]]
-   [:.result-viz
-    [:.ns {:border "1px solid #113"
-           :border-radius "4px"
-           :margin-right "3px"
-           :overflow-wrap :break-word
-           :line-height "2rem"}]
-    [:.var {:border-right "1px solid #113"}
-     [:&:first-child {:border-radius "4px 0 0 4p"}]
-     [:&:last-child {:border-style :none}]]
-    [:.assertion
-     {:font-variant-caps :all-small-caps
-      :font-weight :bold
-      :color :darkgray
-      :padding "0 4px"}]
-    [:.selected-ns
-     [:.pass {:color :white :background-color :green}]
-     [:.fail {:color :white :background-color :red}]
-     [:.error {:color :white :background-color :red}]]
-    [:.pass {:background-color washed-green}]
-    [:.fail {:background-color washed-red}]
-    [:.error {:background-color washed-red}]]
-   
-   [:.ns-run-var
-    [:.result-viz-var
-
-     [:.assertion
-      {:font-variant-caps :all-small-caps
-       :font-weight :bold
-       :color :darkgray
-       :padding "0 4px"}]
-     [:.pass {:color :white :background-color :green}]
-     [:.fail {:color :white :background-color :red}]
-     [:.error {:color :white :background-color :red}]]]
 
    [:.run
     {:display :grid
@@ -168,7 +136,9 @@
      :grid-template-rows "auto auto auto"
      :border "1px solid whitesmoke"
      :box-shadow "1px 1px 5px whitesmoke"
-     :margin-bottom "1rem"}
+     :margin-bottom "1rem"
+     :opacity 0.7}
+    [:&.active {:opacity 1}]
     [:p {:margin 0}]
     [:.run-header {:padding ".5rem 1rem"
                    :grid-column-start 1
@@ -207,17 +177,20 @@
            :height :inherit}]
    [:output {:width ".2rem"
              :height "1rem"}
-    [:.pass {:background-color "#29908a"}]
-    [:.fail {:background-color "#fce840"}]
-    [:.error {:background-color "#fce840"}]]
+    [:.pass {:background-color pass-color}]
+    [:.fail {:background-color fail-color}]
+    [:.error {:background-color error-color}]]
+   [:.results {:display :table}]
+   [:.ns-run {}]
    [:.ns-run
     {:border "1px solid whitesmoke"
      :box-shadow "1px 1px 5px whitesmoke"
      :padding ".5rem 1rem"
      :width :max-content
      :font-family :sans-serif
-     :display :grid
-     :grid-gap ".5rem"}
+     #_#_:display :grid
+     :display :table-row
+     #_#_:grid-gap ".5rem"}
     [:.ns-run--header
      {:background-color :initial
       :color :inherit
@@ -235,7 +208,8 @@
             :flex-direction :column
             :gap ".5rem"}]
     [:.ns-run-var
-     {:border "1px solid whitesmoke"}
+     {:border "1px solid whitesmoke"
+      :display :table-cell}
      [:header
       {:background-color :initial
        :color :inherit
@@ -250,9 +224,9 @@
      [:h4 {:font-weight :normal
            :font-size ".8rem"
            :padding-right ".2rem"}]]
-    [:.fail {:border-right "4px solid #fce840"}]
-    [:.error {:border-right "4px solid tomato"}]
-    [:.success {:border-right "4px solid #29908a"}]
+    [:.fail {:border-right (str "4px solid "  fail-color)}]
+    [:.error {:border-right (str "4px solid " error-color)}]
+    [:.pass {:border-right (str "4px solid "  pass-color)}]
     [:h2 :h3 :h4 :p {:margin 0}]
     [:code {:font-family :monospace
             :padding ".2rem"}]

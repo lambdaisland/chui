@@ -40,6 +40,9 @@
                        (done))
                     1000))))
 
+(deftest error-test
+  (is (throw (ex-info {:foo :baz} "hello"))))
+
 (comment
   (cljs-test-display.core/init!)
   (cljs.test/run-tests))

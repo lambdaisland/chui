@@ -20,7 +20,8 @@
              :interceptor (:name interceptor)
              :exception-type (keyword (pr-str (type t)))
              :exception t}
-            (ex-data t))))
+            (ex-data t))
+           t))
 
 (declare execute*)
 

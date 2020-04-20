@@ -126,9 +126,12 @@
 (def log-error-intor
   {:name ::log-error
    :error (fn [ctx error]
-            (let [data (ex-data error)]
-              (log/error :failed-interceptor-chain (dissoc data :exception)
-                         :exception (:exception data))))})
+            (t/report
+             {:type :error
+              :message "Uncaught exception, not in assertion."
+              :expected nil
+              :actual (ex-cause error)})
+            (dissoc ctx :error))})
 
 ;; for debugging / visualizing progress
 (defn slowdown-intor [ms]
@@ -173,7 +176,11 @@
                   (merge
                    m
                    (file-and-line)
-                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
+                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))
+                  ))
+
+(defn var-summary [{:keys [assertions]}]
+  (assoc (frequencies (map :type assertions)) :test 1))
 
 (defn ns-summary [{:keys [vars]}]
   (merge
@@ -236,7 +243,8 @@
    (when-let [run (current-run)]
      (when-let [donep (and callback (:donep run))]
        (p/let [ctx donep]
-         (update-run assoc :terminated? true)
+         (when-not (:done? run)
+           (update-run assoc :terminated? true))
          (callback ctx)))
      ((:terminate! run)))))
 

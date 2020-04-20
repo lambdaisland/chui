@@ -56,6 +56,16 @@
   (or (:selected-run @ui-state)
       (last (:runs @runner/state))))
 
+(defn selected-test []
+  (let [{:keys [selected-test]} @ui-state]
+    (some #(when (= selected-test (:name %))
+             %)
+          (mapcat :vars (:nss (selected-run))))))
+
+(defn failing-tests []
+  (filter #(runner/fail? (runner/var-summary %))
+          (mapcat :vars (:nss (selected-run)))))
+
 (defn set-state-from-location []
   (let [params (js/URLSearchParams. js/location.search)
         match (.get params "match")
@@ -139,8 +149,8 @@
                :as the-ns}]
   (let [{:keys [selected-test only-failing?]} @ui-state
         sum (runner/ns-summary the-ns)
-        error? (runner/error? sum)
-        fail? (runner/fail? sum)]
+        fail? (runner/fail? sum)
+        ]
     (when (or (not only-failing?) fail?)
       [:article.ns-run
        [:header.ns-run--header
@@ -149,7 +159,10 @@
        [:div
         (for [{var-name :name :keys [assertions] :as var-info} vars
               :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
-              :let [selected? (= var-name (:name selected-test))]]
+              :let [selected? (= var-name selected-test)
+                    sum (runner/var-summary var-info)
+                    error? (runner/error? sum)
+                    fail? (runner/fail? sum)]]
           ^{:key (str var-name)}
           [:article.ns-run-var.selection-target
            {:class (str/join " "
@@ -162,7 +175,7 @@
                               (fn [s]
                                 (if selected?
                                   (dissoc s :selected-test)
-                                  (assoc s :selected-test var-info))))}
+                                  (assoc s :selected-test var-name))))}
            [:header
             [:h3.ns-run--assertion (name var-name)]
             [:p.ns-run--result [:strong (cond error? "Error"
@@ -207,10 +220,11 @@
    [:a.name {:href "https://github.com/lambdaisland/chui"} "lambdaisland.chui"]])
 
 (defn results []
-  [:section.column.results
-   (for [ns (:nss (selected-run))]
-     ^{:key (:ns ns)}
-     [ns-run ns])])
+  [:section.column
+   [:div.results
+    (for [ns (:nss (selected-run))]
+      ^{:key (:ns ns)}
+      [ns-run ns])]])
 
 (defn history [runs]
   [:section.column.history
@@ -218,24 +232,27 @@
     (let [{:keys [selected]} @runner/state
           {:keys [selected-run only-failing?]} @ui-state]
       (for [{:keys [id nss start done? terminated?] :as run} (reverse runs)
-            :let [selected? (= (:id run) (:id selected-run))]]
+            :let [selected? (= id (:id selected-run))
+                  active? (and (not selected-run) (= id (:id (last runs))))]]
         (let [sum (runner/run-summary run)]
           ^{:key id}
           [:article.run.selection-target
-           {:class (when selected? "selected")}
+           {:class (cond
+                     selected? "selected active"
+                     active? "active")
+            :on-click (fn [_]
+                        (swap! ui-state
+                               (fn [s]
+                                 (if selected?
+                                   (dissoc s :selected-run)
+                                   (assoc s :selected-run run)))))}
            [:header.run-header
             [:progress {:max (:test-count run) :value (:tests (runner/run-summary run))}]
             [:p (reltime-str start)]
             [:small
              (when-not done? "Running")
              (when terminated? "Aborted")]]
-           [:section.test-results {:for id
-                                   :on-click (fn [_]
-                                               (swap! ui-state
-                                                      (fn [s]
-                                                        (if selected?
-                                                          (dissoc s :selected-run)
-                                                          (assoc s :selected-run run)))))}
+           [:section.test-results
             [result-viz (if only-failing?
                           (filter #(runner/fail? (runner/ns-summary %)) nss)
                           nss) selected]]
@@ -255,7 +272,7 @@
                  :on-change (fn [e]
                               (let [query (.. e -target -value)]
                                 (set-query! query)))
-                 :placeholder "name space"}]
+                 :placeholder "namespace"}]
         [test-stop-button]]
        [:div.namespace-selector
         (for [{tests :tests
@@ -312,14 +329,18 @@
   [:div "error " (:message m)
    [comparison m]])
 
-(defn test-info []
-  (let [{:keys [selected-test]} @ui-state
-        {:keys [name assertions meta]} selected-test]
-    [:section.column.test-info
-     [:h2.section-header name]
-     (into [:div]
-           (map (fn [m] [report/fail-summary m]))
-           assertions)]))
+(defn test-assertions [{:keys [name assertions] :as var-info}]
+  [:div.test-info
+   [:h2.section-header name]
+   (into [:div]
+         (map (fn [m] [report/fail-summary m]))
+         assertions)])
+
+(defn assertion-details []
+  [:section.column
+   (if-let [test (selected-test)]
+     [test-assertions test]
+     (map (fn [test] [test-assertions test]) (failing-tests)))])
 
 (defn col-count []
   (let [runs? (seq (:runs @runner/state))
@@ -334,7 +355,6 @@
 
 (defn app []
   (let [{:keys [selected runs]} @runner/state
-        {:keys [selected-test]} @ui-state
         runs? (seq runs)]
     [:div
      [:style (styles/inline)]
@@ -345,8 +365,9 @@
       [history runs]
       (when runs?
         [results])
-      (when (and runs? selected-test)
-        [test-info])]]))
+      (when runs?
+        [assertion-details])]]))
 
 (defn render! [element]
+  (set-state-from-location)
   (reagent-dom/render [app] element))

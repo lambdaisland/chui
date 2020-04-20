@@ -112,7 +112,8 @@
   [:div
    "ERROR in " (testing-vars-str m)
    (when (seq testing-contexts)
-     (for [ctx (reverse testing-contexts)]
+     (for [[i ctx] (map vector (range) (reverse testing-contexts))]
+       ^{:key (str i)}
        [:div ctx]))
    (when message
      [:div message])
