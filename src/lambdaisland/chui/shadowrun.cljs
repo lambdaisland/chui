@@ -1,4 +1,7 @@
-(ns lambdaisland.chui.demo
+(ns lambdaisland.chui.shadowrun
+  "Runner namespace to be used with shadow-cljs's :browser-test target.
+
+  Not a 1989 fantasy tabletop game."
   (:require [lambdaisland.chui-demo.a-test]
             [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.ui :as ui]
