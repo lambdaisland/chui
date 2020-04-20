@@ -7,9 +7,45 @@
 (def error-color "crimson")
 (def pass-color  "#29908a")
 
+;; https://github.com/chriskempson/base16-tomorrow-scheme/blob/master/tomorrow.yaml
+(def tomorrow
+  {:white    "#ffffff"
+   :gray1    "#e0e0e0"
+   :gray2    "#d6d6d6"
+   :gray3    "#8e908c"
+   :gray4    "#969896"
+   :gray5    "#4d4d4c"
+   :gray6    "#282a2e"
+   :black    "#1d1f21"
+   :red      "#c82829"
+   :orange   "#f5871f"
+   :yellow   "#eab700"
+   :green    "#718c00"
+   :turqoise "#3e999f"
+   :blue     "#4271ae"
+   :purple   "#8959a8"
+   :brown    "#a3685a"})
+
 (selectors/defselector input)
 
 (def search-input (partial input (selectors/attr= "type" "search")))
+
+(def puget-color-styles
+  [[:code
+    [:.class-delimiter {:color (tomorrow :brown)}]
+    [:.class-name {:color (tomorrow :brown)}]
+    [:.nil {:color (tomorrow :gray5)}]
+    [:.boolean {:color (tomorrow :gray5)}]
+    [:.number {:color (tomorrow :blue)}]
+    [:.character {:color (tomorrow :brown)}]
+    [:.string {:color (tomorrow :turqoise)}]
+    [:.keyword {:color (tomorrow :blue)}]
+    [:.symbol {:color (tomorrow :turqoise)}]
+    [:.delimiter {:color (tomorrow :purple)}]
+    [:.function-symbol {:color (tomorrow :purple)}]
+    [:.tag {:color (tomorrow :brown)}]
+    [:.insertion {:color (tomorrow :green)}]
+    [:.deletion {:color (tomorrow :red)}]]])
 
 (def style
   [[:* {:box-sizing "border-box"}]
@@ -234,4 +270,8 @@
                :font-weight :bold}]]])
 
 (defmacro inline []
-  (garden/css {:pretty-print? false} style))
+  (garden/css
+   {:pretty-print? false}
+   (concat
+    style
+    puget-color-styles)))

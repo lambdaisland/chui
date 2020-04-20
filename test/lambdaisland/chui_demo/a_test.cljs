@@ -27,11 +27,32 @@
                    (done)))})
 
 (deftest aa-test
-  (is (= 123 124)))
+  (is (= 1 1))
+  (is (= [{:x 123}] [{:x 124}]))
+
+
+  (is (= {:person/name "Arne"
+          :person/Age 37
+          :person/books
+          [{:book/title "The Art of Motorcycle Maintenance"}
+           {:book/title "The Art of Motorcycle Maintenance"}
+           {:book/title "The Art of Motorcycle Maintenance"}
+           {:book/title "The Art of Motorcycle Maintenance"}]
+          :user/permissions #{:can-read :can-write}}
+         {:person/name "Arne"
+          :person/Age 37
+          :person/books
+          [{:book/title "Zend and  Art of Motorcycle Maintenance"}
+           {:book/title "The Art of Motorcycle Maintenance"}
+           {:book/title "The Art of Motorcycle Maintenance"}
+           {:book/title "The Art of Motorcycle Maintenance"}]
+          :user/permissions #{:can-read :can-write}}))
+  )
 
 (deftest bb-test
-  (testing "without async"
-    (is (= :with :without)))
+  (testing "hello world"
+    (testing "without async"
+      (is (= :with :without))))
   (testing "with async"
     (async
      done

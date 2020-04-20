@@ -19,11 +19,11 @@
 (defn start []
   (ui/render! (.getElementById js/document "app"))
   (test-data/capture-test-data!)
-  (runner/run-tests))
+  (js/window.requestIdleCallback
+   #(ui/run-tests)))
 
 (defn stop [done]
   (runner/terminate! done))
 
 (defn ^:export init []
-  (ui/render! (.getElementById js/document "app"))
   (start))

@@ -5,7 +5,7 @@
             [lambdaisland.deep-diff2.printer-impl :as printer-impl]
             [lambdaisland.deep-diff2.puget.color.html]))
 
-(def html-printer (ddiff/printer {:color-markup :html-inline}))
+(def html-printer (ddiff/printer {:color-markup :html-classes}))
 
 (defn pprint-str [fipp-doc]
   (with-out-str
@@ -51,7 +51,9 @@
               (for [actual actuals]
                 (puget-printer/format-doc
                  html-printer
-                 (ddiff/diff expected actual))))]])
+                 (if (and (coll? expected) (every? coll? actuals))
+                   (ddiff/diff expected actual)
+                   actual))))]])
     [pprint-doc
      [:span
       "Expected:" :line
@@ -86,36 +88,35 @@
             (str ":" line))
           ")"))))
 
-(defmethod fail-summary :pass [{:keys [testing-contexts testing-vars expected message] :as m}]
+(defn message-context [{:keys [testing-contexts testing-vars expected message] :as m}]
   [:div
-   "PASS in " (testing-vars-str m)
    (when (seq testing-contexts)
-     (for [ctx (reverse testing-contexts)]
-       [:div ctx]))
+     [:div.context
+      (for [[i ctx] (map vector (range) (reverse testing-contexts))]
+        ^{:key (str i)}
+        [:div "→ " ctx])])
    (when message
-     [:div message])
+     [:div.message message])])
+
+(defmethod fail-summary :pass [{:keys [testing-contexts testing-vars expected message] :as m}]
+  [:div.fail-summary
+   [:h3 "PASS"]
+   [message-context m]
    [pprint-doc
     (puget-printer/format-doc html-printer expected)]])
 
 (defmethod fail-summary :fail [{:keys [testing-contexts testing-vars message] :as m}]
-  [:div
-   "FAIL in " (testing-vars-str m)
-   (when (seq testing-contexts)
-     (for [[i ctx] (map vector (range) (reverse testing-contexts))]
-       ^{:key (str i)}
-       [:div ctx]))
-   (when message
-     [:div message])
+  [:div.fail-summary
+   [:h3 "FAIL"]
+   ;; "FAIL in " (testing-vars-str m)
+   [message-context m]
    [print-expr m]])
 
-(defmethod fail-summary :error [{:keys [testing-contexts testing-vars message] :as m}]
-  [:div
-   "ERROR in " (testing-vars-str m)
-   (when (seq testing-contexts)
-     (for [[i ctx] (map vector (range) (reverse testing-contexts))]
-       ^{:key (str i)}
-       [:div ctx]))
-   (when message
-     [:div message])
-   (pr-str (:expected m)) [:br]
-   (pr-str (:actual m))])
+(defmethod fail-summary :error [{exception :actual
+                                 :keys [testing-contexts testing-vars message] :as m}]
+  [:div.fail-summary
+   [:h3 "ERROR"]
+   [message-context m]
+   [:div (str exception)]
+   [:pre (.-stack exception)]
+   ])

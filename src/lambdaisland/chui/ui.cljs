@@ -17,9 +17,11 @@
 
 (defonce ui-state (reagent/atom {}))
 
+(declare run-tests)
+
 (defn test-plan []
   (let [tests @test-data/test-ns-data]
-    (if (str/blank? (:query @ui-state))
+    (if (and (empty? (:selected @runner/state)) (str/blank? (:query @ui-state)))
       tests
       (select-keys tests (:selected @runner/state)))))
 
@@ -80,11 +82,11 @@
   (let [{:keys [query regexp?]} @ui-state
         params (js/URLSearchParams.)]
     (when (not (str/blank? query))
-      (.set params (if regexp? "match" "include") query)
-      (js/window.history.pushState
-       {:query query :regexp? regexp?}
-       "lambdaisland.chui"
-       (str "?" params)))))
+      (.set params (if regexp? "match" "include") query))
+    (js/window.history.pushState
+     {:query query :regexp? regexp?}
+     "lambdaisland.chui"
+     (str "?" params))))
 
 (defn set-query! [query]
   (swap! ui-state
@@ -145,12 +147,11 @@
         ^{:key (str (:name var-info))}
         [result-viz-var var-info])])])
 
-(defn ns-run [{:keys [ns vars]
-               :as the-ns}]
+(defn run-results [{:keys [ns vars]
+                    :as the-ns}]
   (let [{:keys [selected-test only-failing?]} @ui-state
         sum (runner/ns-summary the-ns)
-        fail? (runner/fail? sum)
-        ]
+        fail? (runner/fail? sum)]
     (when (or (not only-failing?) fail?)
       [:article.ns-run
        [:header.ns-run--header
@@ -194,7 +195,7 @@
     (if (false? (:done? (last runs)))
       [:button.button.stop-tests {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop"]
       [:button.button.run-tests
-       {:on-click #(runner/run-tests test-plan)
+       {:on-click #(run-tests test-plan)
         :disabled (= 0 test-count)}
        "Run " test-count " tests"])))
 
@@ -224,13 +225,14 @@
    [:div.results
     (for [ns (:nss (selected-run))]
       ^{:key (:ns ns)}
-      [ns-run ns])]])
+      [run-results ns])]])
 
 (defn history [runs]
   [:section.column.history
    [:div.option
     (let [{:keys [selected]} @runner/state
-          {:keys [selected-run only-failing?]} @ui-state]
+          {:keys [only-failing?]} @ui-state
+          selected-run (selected-run)]
       (for [{:keys [id nss start done? terminated?] :as run} (reverse runs)
             :let [selected? (= id (:id selected-run))
                   active? (and (not selected-run) (= id (:id (last runs))))]]
@@ -243,9 +245,7 @@
             :on-click (fn [_]
                         (swap! ui-state
                                (fn [s]
-                                 (if selected?
-                                   (dissoc s :selected-run)
-                                   (assoc s :selected-run run)))))}
+                                 (assoc s :selected-run run))))}
            [:header.run-header
             [:progress {:max (:test-count run) :value (:tests (runner/run-summary run))}]
             [:p (reltime-str start)]
@@ -316,19 +316,6 @@
           [:div :view-stacktrace
            (str "For stacktrace: See error number " error-number " in console")]))]])
 
-(defmulti assertion :type)
-
-(defmethod assertion :pass [_]
-  [:span {:style {:color "green"}} "•"])
-
-(defmethod assertion :fail [m]
-  [:div (:message m)
-   [comparison m]])
-
-(defmethod assertion :error [m]
-  [:div "error " (:message m)
-   [comparison m]])
-
 (defn test-assertions [{:keys [name assertions] :as var-info}]
   [:div.test-info
    [:h2.section-header name]
@@ -374,3 +361,7 @@
 (defn render! [element]
   (set-state-from-location)
   (reagent-dom/render [app] element))
+
+(defn run-tests []
+  (runner/run-tests)
+  (swap! ui-state dissoc :selected-run))
