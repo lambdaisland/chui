@@ -19,9 +19,9 @@
 
 (defn test-plan []
   (let [tests @test-data/test-ns-data]
-    (if-let [selected (seq (:selected @runner/state))]
-      (select-keys tests selected)
-      tests)))
+    (if (str/blank? (:query @ui-state))
+      tests
+      (select-keys tests (:selected @runner/state)))))
 
 (defn set-ns-select [ns-names]
   (swap! runner/state
@@ -55,6 +55,34 @@
 (defn selected-run []
   (or (:selected-run @ui-state)
       (last (:runs @runner/state))))
+
+(defn set-state-from-location []
+  (let [params (js/URLSearchParams. js/location.search)
+        match (.get params "match")
+        include (.get params "include")]
+    (cond
+      match
+      (swap! ui-state assoc :query match :regexp? true)
+      include
+      (swap! ui-state assoc :query include :regexp? false))))
+
+(defn push-state-to-location []
+  (let [{:keys [query regexp?]} @ui-state
+        params (js/URLSearchParams.)]
+    (when (not (str/blank? query))
+      (.set params (if regexp? "match" "include") query)
+      (js/window.history.pushState
+       {:query query :regexp? regexp?}
+       "lambdaisland.chui"
+       (str "?" params)))))
+
+(defn set-query! [query]
+  (swap! ui-state
+         #(assoc % :query query))
+  (set-ns-select
+   (when-not (str/blank? (str/trim query))
+     (map :name (filtered-nss))))
+  (push-state-to-location))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -148,17 +176,23 @@
 
 (defn test-stop-button []
   (let [{:keys [runs]} @runner/state
-        test-plan (test-plan)]
+        test-plan (test-plan)
+        test-count (apply + (map (comp count :tests val) test-plan))]
     (if (false? (:done? (last runs)))
       [:button.button.stop-tests {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop"]
-      [:button.button.run-tests {:on-click #(runner/run-tests test-plan)} "Run " (apply + (map (comp count :tests val) test-plan)) " tests"])))
+      [:button.button.run-tests
+       {:on-click #(runner/run-tests test-plan)
+        :disabled (= 0 test-count)}
+       "Run " test-count " tests"])))
 
 (defn general-toggles []
   [:div.general-toggles
    [:button {:on-click #(swap! runner/state assoc :runs [])} "Clear results"]
    [:input#regexp
     {:type "checkbox"
-     :on-change #(swap! ui-state assoc :regexp? (.. % -target -checked))
+     :on-change (fn [e]
+                  (swap! ui-state assoc :regexp? (.. e -target -checked))
+                  (push-state-to-location))
      :checked (boolean (:regexp? @ui-state))}]
    [:label {:for "regexp"} "Regexp search"]
    [:input#failing-only
@@ -220,11 +254,7 @@
                  :value query
                  :on-change (fn [e]
                               (let [query (.. e -target -value)]
-                                (swap! ui-state
-                                       #(assoc % :query query))
-                                (set-ns-select
-                                 (when-not (str/blank? (str/trim query))
-                                   (map :name (filtered-nss))))))
+                                (set-query! query)))
                  :placeholder "name space"}]
         [test-stop-button]]
        [:div.namespace-selector
@@ -290,7 +320,6 @@
      (into [:div]
            (map (fn [m] [report/fail-summary m]))
            assertions)]))
-
 
 (defn col-count []
   (let [runs? (seq (:runs @runner/state))
