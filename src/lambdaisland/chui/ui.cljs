@@ -37,13 +37,19 @@
          namespace-name))
 
 (defn filtered-nss []
-  (let [{:keys [query]} @ui-state
+  (let [{:keys [query regexp?]} @ui-state
         query (if (string? query)
                 (str/trim query)
                 "")
         nss (map val (sort-by key @test-data/test-ns-data))]
-    (if (str/blank? query)
+    (cond
+      (str/blank? query)
       nss
+
+      regexp?
+      (filter #(re-find (js/RegExp. query) (str (:name %))) nss)
+
+      :else
       (filter #(str/includes? (str (:name %)) query) nss))))
 
 (defn selected-run []
@@ -141,11 +147,15 @@
 (defn general-toggles []
   [:div.general-toggles
    [:button {:on-click #(swap! runner/state assoc :runs [])} "Clear results"]
-   [:input#regexp {:type "checkbox" :name "regexp"}]
-   [:label {:for "regexp"} "Regexp"]
-   [:input#failing-only {:type "checkbox"
-                         :value (:only-failing? @ui-state)
-                         :on-click #(swap! ui-state update :only-failing? not)}]
+   [:input#regexp
+    {:type "checkbox"
+     :on-change #(swap! ui-state assoc :regexp? (.. % -target -checked))
+     :checked (boolean (:regexp? @ui-state))}]
+   [:label {:for "regexp"} "Regexp search"]
+   [:input#failing-only
+    {:type "checkbox"
+     :checked (boolean (:only-failing? @ui-state))
+     :on-change #(swap! ui-state assoc :only-failing? (.. % -target -checked))}]
    [:label {:for "failing-only"} "Only show failing tests"]])
 
 (defn header []
