@@ -52,11 +52,20 @@
   {:name name
    :enter (fn [ctx]
             (let [result (f)]
-              (if (t/async? result)
+              (cond
+                (t/async? result)
                 (p/promise [resolve]
                   (result
                    (fn []
                      (resolve ctx))))
+                (instance? js/Promise result)
+                (p/promise [resolve]
+                  (.then result
+                         (fn [_]
+                           (resolve ctx))
+                         (fn [error]
+                           (resolve (assoc ctx :error error)))))
+                :else
                 ctx)))})
 
 (defn report-intor
