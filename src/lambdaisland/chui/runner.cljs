@@ -156,13 +156,24 @@
      :column (js/parseInt (re-find #"\d+" (second line-col)) 10)}))
 
 (defmethod t/report [::default :fail] [m]
-  (update-run-var update :assertions conj (merge m (file-and-line))))
+  (update-run-var update :assertions conj
+                  (merge
+                   m
+                   (file-and-line)
+                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
 
 (defmethod t/report [::default :error] [m]
-  (update-run-var update :assertions conj m))
+  (update-run-var update :assertions conj
+                  (merge
+                   m
+                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
 
 (defmethod t/report [::default :pass] [m]
-  (update-run-var update :assertions conj m))
+  (update-run-var update :assertions conj
+                  (merge
+                   m
+                   (file-and-line)
+                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
 
 (defn ns-summary [{:keys [vars]}]
   (merge
