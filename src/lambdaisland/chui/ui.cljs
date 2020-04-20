@@ -101,29 +101,35 @@
         ^{:key (str (:name var-info))}
         [result-viz-var var-info])])])
 
-(defn ns-run [{:keys [ns vars] :as the-ns}]
+(defn ns-run [{:keys [ns vars]
+                 :as the-ns}]
   (let [{:keys [selected-test only-failing?]} @ui-state
         sum (runner/ns-summary the-ns)]
     (when (or (not only-failing?) (runner/fail? sum))
-      [:section.ns-run
-       [:h2.section-header (str ns)]
-       [:span.filename (:file (:meta (first vars)))]
+      [:article.ns-run
+       [:header.ns-run--header
+        [:h2 (str ns)]
+        [:small.filename (:file (:meta (first vars)))]]
        [:div
         (for [{var-name :name :keys [assertions] :as var-info} vars
               :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
               :let [selected? (= var-name (:name selected-test))]]
           ^{:key (str var-name)}
-          [:div.ns-run-var.selection-target
-           {:class (when selected?
-                     "selected")
+          [:article.ns-run-var.selection-target.fail ;FIX fail class
+           {:class (when selected? "selected")
             :on-click #(swap! ui-state
                               (fn [s]
                                 (if selected?
                                   (dissoc s :selected-test)
                                   (assoc s :selected-test var-info))))}
-           (name var-name)
-           [:section.result-viz-var
-            [result-viz-var var-info]]])]])))
+           [:header
+            [:h3.ns-run--assertion (name var-name)]
+            [:p.ns-run--result [:strong "Fail"]]] ;FIX
+           [:output
+            [:h4 ""]
+            [:code.expected ""]
+            [:h4 ""]
+            [:code.actual ""]]])]])))
 
 (defn test-stop-button []
   (let [{:keys [runs]} @runner/state

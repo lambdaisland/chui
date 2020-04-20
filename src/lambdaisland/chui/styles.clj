@@ -149,10 +149,7 @@
     [:.pass {:background-color washed-green}]
     [:.fail {:background-color washed-red}]
     [:.error {:background-color washed-red}]]
-   [:.ns-run
-    {:margin-bottom "2rem"}
-    [:.filename {:float :right
-                 :color :darkgray}]]
+   
    [:.ns-run-var
     [:.result-viz-var
 
@@ -210,9 +207,57 @@
            :height :inherit}]
    [:output {:width ".2rem"
              :height "1rem"}
-    [:.pass {:background-color :limegreen}]
-    [:.fail {:background-color :gold}]
-    [:.error {:background-color :tomato}]]])
+    [:.pass {:background-color "#29908a"}]
+    [:.fail {:background-color "#fce840"}]
+    [:.error {:background-color "#fce840"}]]
+   [:.ns-run
+    {:border "1px solid whitesmoke"
+     :box-shadow "1px 1px 5px whitesmoke"
+     :padding ".5rem 1rem"
+     :width :max-content
+     :font-family :sans-serif
+     :display :grid
+     :grid-gap ".5rem"}
+    [:.ns-run--header
+     {:background-color :initial
+      :color :inherit
+      :padding :none
+      :border-radius :none
+      :display :initial
+      :justify-content :none}
+     [:h2 {:font-weight :normal
+           :margin-bottom ".2rem"
+           :font-size "1.1rem"}]
+     [:.filename {:color :darkslategray
+                  :font-size ".8rem"
+                  :font-family :monospace}]]
+    [:>div {:display :flex
+            :flex-direction :column
+            :gap ".5rem"}]
+    [:.ns-run-var
+     {:border "1px solid whitesmoke"}
+     [:header
+      {:background-color :initial
+       :color :inherit
+       :padding 0
+       :border-radius :unset
+       :line-height 1.5
+       :display :flex}
+      [:h3 {:font-weight :normal
+            :font-size "1rem"
+            :padding-left ".2rem"}]
+      [:p {:padding-right ".4rem"}]]
+     [:h4 {:font-weight :normal
+           :font-size ".8rem"
+           :padding-right ".2rem"}]]
+    [:.fail {:border-right "4px solid #fce840"}]
+    [:.error {:border-right "4px solid tomato"}]
+    [:.success {:border-right "4px solid #29908a"}]
+    [:h2 :h3 :h4 :p {:margin 0}]
+    [:code {:font-family :monospace
+            :padding ".2rem"}]
+    [:.actual {:color :red
+               :font-weight :bold}]]])
 
 (defmacro inline []
   (garden/css {:pretty-print? false} style))
