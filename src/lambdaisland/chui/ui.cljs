@@ -58,15 +58,17 @@
   (or (:selected-run @ui-state)
       (last (:runs @runner/state))))
 
-(defn selected-test []
-  (let [{:keys [selected-test]} @ui-state]
-    (some #(when (= selected-test (:name %))
-             %)
-          (mapcat :vars (:nss (selected-run))))))
-
 (defn failing-tests []
   (filter #(runner/fail? (runner/var-summary %))
           (mapcat :vars (:nss (selected-run)))))
+
+(defn selected-tests []
+  (let [{:keys [selected-tests]} @ui-state]
+    (set
+     (if (seq selected-tests)
+       (filter #(some #{(:name %)} selected-tests)
+               (mapcat :vars (:nss (selected-run))))
+       (failing-tests)))))
 
 (defn set-state-from-location []
   (let [params (js/URLSearchParams. js/location.search)
@@ -149,7 +151,8 @@
 
 (defn run-results [{:keys [ns vars]
                     :as the-ns}]
-  (let [{:keys [selected-test only-failing?]} @ui-state
+  (let [{:keys [only-failing?]} @ui-state
+        selected-tests (selected-tests)
         sum (runner/ns-summary the-ns)
         fail? (runner/fail? sum)]
     (when (or (not only-failing?) fail?)
@@ -160,7 +163,7 @@
        [:div
         (for [{var-name :name :keys [assertions] :as var-info} vars
               :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
-              :let [selected? (= var-name selected-test)
+              :let [selected? (some (comp #{var-name} :name) selected-tests)
                     sum (runner/var-summary var-info)
                     error? (runner/error? sum)
                     fail? (runner/fail? sum)]]
@@ -174,9 +177,10 @@
                                 :else  "pass")])
             :on-click #(swap! ui-state
                               (fn [s]
-                                (if selected?
-                                  (dissoc s :selected-test)
-                                  (assoc s :selected-test var-name))))}
+                                (assoc s :selected-tests
+                                       (if selected?
+                                         (remove #{var-name} (map :name selected-tests))
+                                         (conj (map :name selected-tests) var-name)))))}
            [:header
             [:h3.ns-run--assertion (name var-name)]
             [:p.ns-run--result [:strong (cond error? "Error"
@@ -325,21 +329,18 @@
 
 (defn assertion-details []
   [:section.column
-   (if-let [test (selected-test)]
-     [test-assertions test]
+   (if-let [tests (seq (selected-tests))]
      (map (fn [test]
             ^{:key (:name test)}
             [test-assertions test])
-          (failing-tests)))])
+          tests) ; Felipe fix me :)
+     [:p "All tests pass!"])])
 
 (defn col-count []
-  (let [runs? (seq (:runs @runner/state))
-        {:keys [selected-test]} @ui-state]
+  (let [runs? (seq (:runs @runner/state))]
     (cond
-      (and runs? selected-test)
-      4
       runs?
-      3
+      4
       :else
       2)))
 
