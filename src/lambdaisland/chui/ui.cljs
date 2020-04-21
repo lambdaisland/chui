@@ -296,8 +296,9 @@
                           (toggle-ns-select ns-sym (.. % -target -checked)))}]
            [:label {:for ns-str}
             [:span ns-str (when (:test/skip ns-meta)
-                            [:span.skip " (skip)"])]
-            [:aside test-count (if (= 1 test-count)
+                            [:span.skip " (skip)"])]]
+           [:aside
+            [:small test-count (if (= 1 test-count)
                                  " test"
                                  " tests")]]])]])))
 

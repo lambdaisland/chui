@@ -131,7 +131,7 @@
    [:.search-bar {:display :grid
                   :background-color :whitesmoke
                   :box-shadow "1px 1px 5px whitesmoke"
-                  :grid-template-columns "1fr 22%"
+                  :grid-template-columns "4fr minmax(26%, 1fr)"
                   :grid-auto-flow :column
                   :border "1px solid whitesmoke"
                   :position :sticky
@@ -149,21 +149,20 @@
    [:.stop-tests {:color :coral}
     [:&:hover {:background-color :lightcoral}]]
    [:.namespace-links
-    {:font-size "1rem"
-     :display :flex
-     ;; :flex-flow "column wrap"
-     :justify-content :space-between
-     :border-radius "2px"}
+    {:display :flex
+     :flex-wrap :wrap
+     :border-radius "2px"
+     :align-items :center
+     :justify-content :space-between}
     [:* {}
      [:&:selected {:background-color :fuchsia}]]
     [:input {:display :none
              :width :max-content}]
-    [:label {:padding ".50rem .5rem"
-             :flex 1}]
-    [:aside {:padding ".50rem .5rem"}]
-    [:small {:font-style :italic
-             :color :darkgray
-             :white-space :nowrap}]
+    [:label {:padding ".50rem .5rem"}]
+    [:aside {:padding ".50rem .5rem"}
+     [:small {:font-style :italic
+              :color :darkgray
+              :white-space :nowrap}]]
     [:.skip {:color :darkgray}]]
 
    [:.run
