@@ -34,39 +34,35 @@
     "Actual:" :line
     [:nest (puget-printer/format-doc html-printer (:actual m))]]])
 
-(defn print-expression [m]
+(defn print-expr-= [m]
   (if (and (seq? (second (:actual m)))
            (> (count (second (:actual m))) 2))
     ;; :actual is of the form (not (= ...))
 
     (let [[_ expected & actuals] (-> m :actual second)]
-      [pprint-doc
-       [:span
-        "Expected:" :line
-        [:nest (puget-printer/format-doc html-printer expected)]
-        :break
-        "Actual:" :line
-        (into [:nest]
-              (interpose :break)
-              (for [actual actuals]
-                (puget-printer/format-doc
-                 html-printer
-                 (if (and (coll? expected) (every? coll? actuals))
-                   (ddiff/diff expected actual)
-                   actual))))]])
-    [pprint-doc
-     [:span
-      "Expected:" :line
-      [:nest (puget-printer/format-doc html-printer (:expected m))]
-      :break
-      "Actual:" :line
-      [:nest (puget-printer/format-doc html-printer (:actual m))]]]))
+      [:div
+       [:h4 "Expected"]
+       [pprint-doc (puget-printer/format-doc html-printer expected)]
+       [:h4 "Actual"]
+       (for [[i actual] (map vector (range )actuals)]
+         ^{:key (str i)}
+         [pprint-doc
+          (puget-printer/format-doc
+           html-printer
+           (if (and (coll? expected) (every? coll? actuals))
+             (ddiff/diff expected actual)
+             actual))])])
+    [:div
+     [:h4 "Expected"]
+     [pprint-doc (puget-printer/format-doc html-printer (:expected m))]
+     [:h4 "Actual"]
+     [pprint-doc (puget-printer/format-doc html-printer (:actual m))]]))
 
 (defmethod print-expr '= [m]
-  (print-expression m))
+  (print-expr-= m))
 
 (defmethod print-expr '=? [m]
-  (print-expression m))
+  (print-expr-= m))
 
 (defmulti fail-summary :type)
 
@@ -94,20 +90,20 @@
      [:div.context
       (for [[i ctx] (map vector (range) (reverse testing-contexts))]
         ^{:key (str i)}
-        [:div "→ " ctx])])
+        [:div.context (apply str (repeat i "  ")) ctx])])
    (when message
      [:div.message message])])
 
 (defmethod fail-summary :pass [{:keys [testing-contexts testing-vars expected message] :as m}]
   [:div.fail-summary
-   [:h3 "PASS"]
+   [:aside "PASS"]
    [message-context m]
    [pprint-doc
     (puget-printer/format-doc html-printer expected)]])
 
 (defmethod fail-summary :fail [{:keys [testing-contexts testing-vars message] :as m}]
   [:div.fail-summary
-   [:h3 "FAIL"]
+   [:aside "FAIL"]
    ;; "FAIL in " (testing-vars-str m)
    [message-context m]
    [print-expr m]])
@@ -115,8 +111,9 @@
 (defmethod fail-summary :error [{exception :actual
                                  :keys [testing-contexts testing-vars message] :as m}]
   [:div.fail-summary
-   [:h3 "ERROR"]
+   [:aside "ERROR"]
    [message-context m]
    [:div (str exception)]
    [:pre (.-stack exception)]
+   [:a.bottom-link {:on-click #(do (js/console.log exception) (.preventDefault %)) :href "#"} "Log error"]
    ])

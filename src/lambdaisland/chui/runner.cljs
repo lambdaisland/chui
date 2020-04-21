@@ -106,31 +106,30 @@
   "Sequence of interceptors which handle a single namespace, including
   once-fixtures and each-fixtures."
   [ns {:keys [meta tests each-fixtures once-fixtures] :as ns-data}]
-  (when (and (not (:test/skip meta)) )
-    (when-let [tests (seq tests)]
-      (concat
-       [(report-intor {:type :begin-test-ns :ns ns})
-        {:name :begin-ns-update-run
-         :enter (fn [ctx]
-                  (update-run update :nss conj {:ns ns
-                                                :done? false
-                                                :vars []})
-                  ctx)}]
-       (fixture-intors ns :before :once once-fixtures)
-       (->> tests
-            (sort-by (comp :line :meta))
-            (map var-intors)
-            (mapcat (fn [var-intors]
-                      (concat
-                       (fixture-intors ns :before :each once-fixtures)
-                       var-intors
-                       (fixture-intors ns :after :each once-fixtures)))))
-       (fixture-intors ns :after :once once-fixtures)
-       {:name :end-ns-update-run
-        :enter (fn [ctx]
-                 (update-run update :nss assoc :done? true)
-                 ctx)}
-       [(report-intor {:type :end-test-ns :ns ns})]))))
+  (when-let [tests (seq tests)]
+    (concat
+     [(report-intor {:type :begin-test-ns :ns ns})
+      {:name :begin-ns-update-run
+       :enter (fn [ctx]
+                (update-run update :nss conj {:ns ns
+                                              :done? false
+                                              :vars []})
+                ctx)}]
+     (fixture-intors ns :before :once once-fixtures)
+     (->> tests
+          (sort-by (comp :line :meta))
+          (map var-intors)
+          (mapcat (fn [var-intors]
+                    (concat
+                     (fixture-intors ns :before :each once-fixtures)
+                     var-intors
+                     (fixture-intors ns :after :each once-fixtures)))))
+     (fixture-intors ns :after :once once-fixtures)
+     {:name :end-ns-update-run
+      :enter (fn [ctx]
+               (update-run update :nss assoc :done? true)
+               ctx)}
+     [(report-intor {:type :end-test-ns :ns ns})])))
 
 (def log-error-intor
   {:name ::log-error

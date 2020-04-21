@@ -19,12 +19,6 @@
 
 (declare run-tests)
 
-(defn test-plan []
-  (let [tests @test-data/test-ns-data]
-    (if (and (empty? (:selected @runner/state)) (str/blank? (:query @ui-state)))
-      tests
-      (select-keys tests (:selected @runner/state)))))
-
 (defn set-ns-select [ns-names]
   (swap! runner/state
          assoc
@@ -53,6 +47,18 @@
 
       :else
       (filter #(str/includes? (str (:name %)) query) nss))))
+
+(defn test-plan []
+  (let [tests @test-data/test-ns-data]
+    (cond
+      (seq (:selected @runner/state))
+      (select-keys tests (:selected @runner/state))
+
+      (not (str/blank? (:query @ui-state)))
+      (into {} (map (juxt :name identity)) (filtered-nss))
+
+      :else
+      tests)))
 
 (defn selected-run []
   (or (:selected-run @ui-state)
@@ -134,20 +140,22 @@
    {:title (str var-name)}
    (for [[i {:keys [type]}] (map vector (range) assertions)]
      ^{:key (str i)}
-     [:output.assertion {:class (name type)}])])
+     [:output.assertion {:class (name type)} " ​"])])
 
 (defn result-viz [nss selected]
-  [:section.test-results-ns
-   (for [{:keys [ns vars]} nss]
-     ^{:key (str ns)}
-     [:span.ns
-      {:title ns
-       :class (when (or (empty? selected)
-                        (contains? selected ns))
-                "selected-ns")}
-      (for [var-info vars]
-        ^{:key (str (:name var-info))}
-        [result-viz-var var-info])])])
+  [:section.test-results
+   (interpose
+    " "
+    (for [{:keys [ns vars]} nss]
+      ^{:key (str ns)}
+      [:span.ns
+       {:title ns
+        :class (when (or (empty? selected)
+                         (contains? selected ns))
+                 "selected-ns")}
+       (for [var-info vars]
+         ^{:key (str (:name var-info))}
+         [result-viz-var var-info])]))])
 
 (defn run-results [{:keys [ns vars]
                     :as the-ns}]
@@ -156,7 +164,7 @@
         sum (runner/ns-summary the-ns)
         fail? (runner/fail? sum)]
     (when (or (not only-failing?) fail?)
-      [:article.ns-run
+      [:article.ns-run.card
        [:header.ns-run--header
         [:h2 (str ns)]
         [:small.filename (:file (:meta (first vars)))]]
@@ -168,7 +176,7 @@
                     error? (runner/error? sum)
                     fail? (runner/fail? sum)]]
           ^{:key (str var-name)}
-          [:article.ns-run-var.selection-target
+          [:article.ns-run-var.selection-target.inner-card
            {:class (str/join " "
                              [(when selected? "selected")
                               (cond
@@ -180,9 +188,11 @@
                                 (assoc s :selected-tests
                                        (if selected?
                                          (remove #{var-name} (map :name selected-tests))
-                                         (conj (map :name selected-tests) var-name)))))}
-           [:header
-            [:h3.ns-run--assertion (name var-name)]
+                                         #{var-name}))))}
+           [:header.result-var-card
+            [:div.var-name-result
+             [:h3.ns-run--assertion (name var-name)]
+             [:output.test-results [:span.ns [result-viz-var var-info]]]]
             [:p.ns-run--result [:strong (cond error? "Error"
                                               fail?  "Fail"
                                               :else  "Pass")]]]])]])))
@@ -200,7 +210,7 @@
 
 (defn general-toggles []
   [:div.general-toggles
-   [:button {:on-click #(swap! runner/state assoc :runs [])} "Clear results"]
+   [:button.button {:on-click #(swap! runner/state assoc :runs [])} "Clear results"]
    [:input#regexp
     {:type "checkbox"
      :on-change (fn [e]
@@ -215,7 +225,7 @@
    [:label {:for "failing-only"} "Only show failing tests"]])
 
 (defn header []
-  [:header
+  [:header.top-bar
    [general-toggles]
    [:a.name {:href "https://github.com/lambdaisland/chui"} "lambdaisland.chui"]])
 
@@ -237,7 +247,7 @@
                   active? (and (not selected-run) (= id (:id (last runs))))]]
         (let [sum (runner/run-summary run)]
           ^{:key id}
-          [:article.run.selection-target
+          [:article.run.selection-target.card
            {:class (cond
                      selected? "selected active"
                      active? "active")
@@ -251,10 +261,9 @@
             [:small
              (when-not done? "Running")
              (when terminated? "Aborted")]]
-           [:section.test-results
-            [result-viz (if only-failing?
-                          (filter #(runner/fail? (runner/ns-summary %)) nss)
-                          nss) selected]]
+           [result-viz (if only-failing?
+                         (filter #(runner/fail? (runner/ns-summary %)) nss)
+                         nss) selected]
            [:footer
             [:p [summary sum]]]])))]])
 
@@ -264,7 +273,7 @@
     (let [{:keys [selected]} @runner/state
           {:keys [query]} @ui-state]
       [:section.column-namespaces
-       [:div.search-bar
+       [:div.search-bar.card
         [:input {:type "search"
                  ;; :auto-focus true
                  :value query
@@ -316,12 +325,24 @@
           [:div :view-stacktrace
            (str "For stacktrace: See error number " error-number " in console")]))]])
 
-(defn test-assertions [{:keys [name assertions] :as var-info}]
-  [:div.test-info
-   [:h2.section-header name]
-   (into [:div]
-         (map (fn [m] [report/fail-summary m]))
-         assertions)])
+(defn test-assertions [{var-name :name :keys [assertions] :as var-info}]
+  (reagent/with-let [pass? (comp #{:pass} :type)
+                     show-passing? (reagent/atom false)]
+    [:div.test-info.card
+     [:h2.section-header var-name]
+     (into [:div]
+           (comp
+            (if @show-passing?
+              identity
+              (remove pass?))
+            (map (fn [m]
+                   [:div.inner-card.assertion {:class (name (:type m))}
+                    [report/fail-summary m]])))
+           assertions)
+     (let [pass-count (count (filter pass? assertions))]
+       (when (and (not @show-passing?) (< 0 pass-count))
+         [:a.bottom-link {:on-click #(do (reset! show-passing? true) (.preventDefault %)) :href "#"}
+          "Show " pass-count " passing assertions"]))]))
 
 (defn assertion-details []
   [:section.column
@@ -343,7 +364,7 @@
 (defn app []
   (let [{:keys [selected runs]} @runner/state
         runs? (seq runs)]
-    [:div
+    [:div#chui
      [:style (styles/inline)]
      [header]
      [:main
@@ -360,5 +381,10 @@
   (reagent-dom/render [app] element))
 
 (defn run-tests []
-  (runner/run-tests)
-  (swap! ui-state dissoc :selected-run))
+  (let [tests (test-plan)]
+    (when (seq tests)
+      (runner/run-tests tests)
+      (swap! ui-state dissoc :selected-run))))
+
+(defn terminate! [done]
+  (runner/terminate! done))

@@ -48,7 +48,9 @@
     [:.deletion {:color (tomorrow :red)}]]])
 
 (def style
-  [[:* {:box-sizing "border-box"}]
+  [[:body {:overflow :hidden}]
+   [:#chui
+    [:* {:box-sizing "border-box"}]]
    [:html {:color "#333"
            :font-family "sans-serif"
            :height "100vh"}]
@@ -58,20 +60,33 @@
     [:> [:div {:height "100%"
                :display :grid
                :grid-template-rows "auto 1fr"
-               :grid-gap ".3rem"
-               :padding ".3rem"}]]]
-   [:header {:background-color "#6b6bff"
-             :color "#7cdfff"
-             :padding ".3rem"
-             :border-radius ".1rem"
-             :display :flex
-             :justify-content :space-between}]
+               :grid-gap ".3rem"}]]]
+   [:.top-bar {:background-color (:blue tomorrow)
+               :color "#7cdfff"
+               :padding ".5rem"
+               :display :flex
+               :justify-content :space-between}
+    [:.button {:padding ".3rem .6rem"
+               :background-color :whitesmoke
+               :border-radius "2px"
+               }]
+    [:.general-toggles
+     [:button :label {:margin-right "1rem"}]
+     [:input {:margin-right ".5rem"}]]
+    [:.name {:color :white
+             :text-decoration :none
+             :font-size "1.5rem"
+             :padding-right ".3rem"}]]
    [:.interface-controls {:display :flex}]
+   [:.card {:border "1px solid #eee"
+            :box-shadow "1px 1px 5px #eee"}]
+   [:.inner-card {:border "1px solid #eee"}]
    [:ul {:padding ".2rem"
          :list-style :none
          :text-decoration :none
          :line-height 1.5}]
    [:li [:a {:text-decoration :none}]]
+   [:code {:font-size "1.1rem"}]
    [:main
     {:display :flex
      :width "100%"
@@ -87,12 +102,10 @@
      [:>section {:width "20vw"}
       [:&:last-child {:width "40vw"}]]]
     [:>section {:flex-shrink 0
-                :scroll-snap-align :center
-                :scrollbar-width :none
                 :display :flex
                 :flex-direction :column
                 :padding ".5rem"
-                :overflow "scroll"}
+                :overflow :auto}
      [:&:hover {:background-color :snow}]]]
    [:.namespaces {:background-color :inherit}]
    [:.fieldset {:border "1px solid black"
@@ -113,14 +126,34 @@
    [:.section-header {:font-size "1.1rem"
                       :font-weight "bold"
                       :width "100%"
-                      :border-bottom "1px solid #000"
                       :margin 0}]
-   [:.test-info { :background-color :initial}]
+   [:.test-info {:background-color :initial
+                 :padding ".5rem 1rem 1rem"
+                 :margin-bottom "1rem"}
+    [:.inner-card {:padding ".3rem .5rem"
+                   :margin ".5rem 0"}]
+    [:.assertion {:position :relative
+                  :overflow-y :auto}]
+    [:.context :.message {:margin-bottom ".3rem"}]
+    [:.pass {:border-right (str "4px solid " pass-color)}]
+    [:.fail {:border-right (str "4px solid " fail-color)}]
+    [:.error {:border-right (str "4px solid " error-color)}]
+    [:aside {:position :absolute
+             :top 0
+             :right 0
+             :font-weight :bold
+             :font-variant-caps :all-small-caps
+             :padding ".2rem .5rem"}]
+    [:h4 {:margin 0
+          :font-variant-caps :all-small-caps
+          }]
+    [:.bottom-link {:width "100%"
+                    :display :block
+                    :text-align :right
+                    :margin-top "1rem"}]
+    ]
    [:.namespaces [:+ul {:padding-left "1.5rem"
                         :line-height "1.7rem"}]]
-   [:.name {:color :white
-            :text-decoration :none
-            :padding-right ".3rem"}]
    [:.toggle {:position :absolute
               :left "-100vw"}]
    [:.namespace-selector {:display :flex
@@ -130,10 +163,8 @@
    [:.active {:font-weight :bold}]
    [:.search-bar {:display :grid
                   :background-color :whitesmoke
-                  :box-shadow "1px 1px 5px whitesmoke"
                   :grid-template-columns "4fr minmax(26%, 1fr)"
                   :grid-auto-flow :column
-                  :border "1px solid whitesmoke"
                   :position :sticky
                   :top 0}]
    [:.button {:font-variant-caps :all-small-caps
@@ -145,7 +176,8 @@
                :cursor :pointer}]]
    [:.run-tests {:color :silver
                  :line-height ".9"}
-    [:&:hover :&:active {:background-color :lightgreen}]]
+    [:&:hover :&:active {:background-color :lightgreen}]
+    [:&:hover:disabled {:background-color :silver}]]
    [:.stop-tests {:color :coral}
     [:&:hover {:background-color :lightcoral}]]
    [:.namespace-links
@@ -166,12 +198,7 @@
     [:.skip {:color :darkgray}]]
 
    [:.run
-    {:display :grid
-     :grid-template-columns "1fr auto"
-     :grid-template-rows "auto auto auto"
-     :border "1px solid whitesmoke"
-     :box-shadow "1px 1px 5px whitesmoke"
-     :margin-bottom "1rem"
+    {:margin-bottom "1rem"
      :opacity 0.7}
     [:&.active {:opacity 1}]
     [:p {:margin 0}]
@@ -186,7 +213,8 @@
                    :grid-template-columns :subgrid}
      [:p {:grid-column-start 1}]
      [:small {:grid-column-start 2
-              :color :gray}]]
+              :color :gray
+              :text-align :right}]]
     [:footer {:padding ".5rem 1rem"
               :grid-column "1 /span 2"
               :grid-row-start 3}]
@@ -195,31 +223,25 @@
                 :height "4px"
                 :margin-top ".5rem"
                 :margin-bottom ".5rem"}]]
-   [:.test-results {:box-sizing :padding-box
-                    :grid-column "1 / span 2"
-                    :display :flex
-                    :flex-wrap :wrap
-                    :justify-content :flex-start
+   [:.test-results {:grid-column "1 / span 2"
+                    :line-height "1.6rem"
+                    :text-align :justify
                     :margin "0 1rem"
-                    :gap ".2rem"
-                    :padding-top ".5rem"
-                    :padding-bottom ".5rem"}]
-   [:.var {:display :inline-flex
-           :flex-wrap :wrap
-           :margin-right ".2rem"
-           :border "1px solid darkslategray"
-           :padding "1px"
-           :width :inherit
-           :height :inherit}]
-   [:output {:width ".2rem"
-             :height "1rem"}
-    [:.pass {:background-color pass-color}]
-    [:.fail {:background-color fail-color}]
-    [:.error {:background-color error-color}]]
+                    :overflow :hidden
+                    :font-size "50%"}
+    [:.ns {;;:border "1px solid darkslategray"
+           :overflow-wrap :anywhere
+           :box-shadow "1px 1px 4px #999"}]
+    [:.var {:border-right (str "1px solid #ccc")}
+     [:&:last-child {:border-style :none}]]
+    [:output {:display :inline-box
+              :width "1em"}
+     [:.pass {:background-color pass-color}]
+     [:.fail {:background-color fail-color}]
+     [:.error {:background-color error-color}]]]
    [:.ns-run
-    {:border "1px solid whitesmoke"
-     :box-shadow "1px 1px 5px whitesmoke"
-     :padding ".5rem 1rem 1rem"
+    {:padding ".5rem 1rem 1rem"
+     :margin-bottom "1rem"
      :font-family :sans-serif}
     [:.ns-run--header
      {:background-color :initial
@@ -235,9 +257,10 @@
     [:>div {:display :flex
             :flex-direction :column
             :gap ".5rem"}]
+    [:.ns-run--result {:flex-grow 1 :text-align :right}]
+    [:.var-name-result {:display :flex}]
     [:.ns-run-var
-     {:border "1px solid whitesmoke"
-      :display :table-cell}
+     [:.test-results {:margin-top "-1px"}]
      [:header
       {:background-color :initial
        :color :inherit
