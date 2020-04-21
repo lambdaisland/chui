@@ -58,7 +58,9 @@
       (into {} (map (juxt :name identity)) (filtered-nss))
 
       :else
-      tests)))
+      (into {}
+            (remove (comp :test/skip :meta val))
+            tests))))
 
 (defn selected-run []
   (or (:selected-run @ui-state)
@@ -204,7 +206,7 @@
     (if (false? (:done? (last runs)))
       [:button.button.stop-tests {:on-click #(runner/terminate! (fn [ctx] (log/info :terminated! ctx)))} "Stop"]
       [:button.button.run-tests
-       {:on-click #(run-tests test-plan)
+       {:on-click #(run-tests)
         :disabled (= 0 test-count)}
        "Run " test-count " tests"])))
 
@@ -376,9 +378,6 @@
       (when runs?
         [assertion-details])]]))
 
-(defn render! [element]
-  (set-state-from-location)
-  (reagent-dom/render [app] element))
 
 (defn run-tests []
   (let [tests (test-plan)]
@@ -388,3 +387,7 @@
 
 (defn terminate! [done]
   (runner/terminate! done))
+
+(defn render! [element]
+  (set-state-from-location)
+  (reagent-dom/render [app] element))

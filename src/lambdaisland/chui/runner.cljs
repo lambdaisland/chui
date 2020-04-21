@@ -49,7 +49,8 @@
   IAsyncTest values are created using the `cljs.test/async` macro, which may be
   used in tests (deftest) and fixtures to implement asynchrony. "
   [name f]
-  {:name name
+  {:name :cljs-test-intor
+   :test name
    :enter (fn [ctx]
             (let [result (f)]
               (cond
