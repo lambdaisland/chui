@@ -205,6 +205,7 @@
                     :padding-top ".5rem"
                     :padding-bottom ".5rem"}]
    [:.var {:display :inline-flex
+           :flex-wrap :wrap
            :margin-right ".2rem"
            :border "1px solid darkslategray"
            :padding "1px"
