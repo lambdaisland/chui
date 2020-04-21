@@ -108,7 +108,7 @@
 
    [:.selection-target
     [:&:hover {:background-color "#ff8"}]
-    [:&.selected {:background-color "#cfc"}]]
+    [:&.selected {:background-color "lightgoldenrodyellow"}]]
    [:.history { :background-color :inherit}]
    [:.section-header {:font-size "1.1rem"
                       :font-weight "bold"
@@ -216,24 +216,16 @@
     [:.pass {:background-color pass-color}]
     [:.fail {:background-color fail-color}]
     [:.error {:background-color error-color}]]
-   [:.results {:display :table}]
-   [:.ns-run {}]
    [:.ns-run
     {:border "1px solid whitesmoke"
      :box-shadow "1px 1px 5px whitesmoke"
-     :padding ".5rem 1rem"
-     :width :max-content
-     :font-family :sans-serif
-     #_#_:display :grid
-     :display :table-row
-     #_#_:grid-gap ".5rem"}
+     :padding ".5rem 1rem 1rem"
+     :font-family :sans-serif}
     [:.ns-run--header
      {:background-color :initial
       :color :inherit
-      :padding :none
-      :border-radius :none
-      :display :initial
-      :justify-content :none}
+      :display :inherit
+      :margin-bottom ".5rem"}
      [:h2 {:font-weight :normal
            :margin-bottom ".2rem"
            :font-size "1.1rem"}]
@@ -249,7 +241,6 @@
      [:header
       {:background-color :initial
        :color :inherit
-       :padding 0
        :border-radius :unset
        :line-height 1.5
        :display :flex}

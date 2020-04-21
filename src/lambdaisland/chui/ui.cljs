@@ -185,12 +185,7 @@
             [:h3.ns-run--assertion (name var-name)]
             [:p.ns-run--result [:strong (cond error? "Error"
                                               fail?  "Fail"
-                                              :else  "Pass")]]]
-           [:output
-            [:h4 ""]
-            [:code.expected ""]
-            [:h4 ""]
-            [:code.actual ""]]])]])))
+                                              :else  "Pass")]]]])]])))
 
 (defn test-stop-button []
   (let [{:keys [runs]} @runner/state
