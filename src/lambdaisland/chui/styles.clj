@@ -258,9 +258,11 @@
             :flex-direction :column
             :gap ".5rem"}]
     [:.ns-run--result {:flex-grow 1 :text-align :right}]
-    [:.var-name-result {:display :flex}]
+    [:.var-name-result {:display :flex
+                        :flex-wrap :wrap}]
     [:.ns-run-var
-     [:.test-results {:margin-top "-1px"}]
+     {:padding-left ".2rem"}
+     [:.test-results {:margin "-1px 0 0 0"}]
      [:header
       {:background-color :initial
        :color :inherit
@@ -269,7 +271,7 @@
        :display :flex}
       [:h3 {:font-weight :normal
             :font-size "1rem"
-            :padding-left ".2rem"}]
+            :padding "0 1rem 0 0"}]
       [:p {:padding-right ".4rem"}]]
      [:h4 {:font-weight :normal
            :font-size ".8rem"
