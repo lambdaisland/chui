@@ -36,6 +36,23 @@ inspecting results.
 See the [Architecture Decision Log](doc/architecture_decision_log.org) for
 technical background.
 
+## Use from shadow-cljs
+
+Use the `lambdaisland.chui.shadowrun` namespace as you `:runner-ns`
+
+``` clojure
+{:dev-http
+ {888 "classpath:public"}
+
+ :builds
+ {:test
+  {:target     :browser-test
+   :runner-ns  lambdaisland.chui.shadowrun
+   :test-dir   "resources/public"
+   :asset-path "/ui"
+   :ns-regexp  "-test$"}}}
+```
+
 ## License
 
 Copyright &copy; 2020 Arne Brasseur and Contributors
