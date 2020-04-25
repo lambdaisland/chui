@@ -2,8 +2,7 @@
   "Runner namespace to be used with shadow-cljs's :browser-test target.
 
   Not a 1989 fantasy tabletop game."
-  (:require [lambdaisland.chui-demo.a-test]
-            [lambdaisland.chui.runner :as runner]
+  (:require [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.ui :as ui]
             [lambdaisland.chui.test-data :as test-data]
             [lambdaisland.glogi :as log]
