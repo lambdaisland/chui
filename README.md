@@ -53,6 +53,8 @@ Use the `lambdaisland.chui.shadowrun` namespace as you `:runner-ns`
    :ns-regexp  "-test$"}}}
 ```
 
+![Screenshot of the Chui UI in action](screenshot.png)
+
 ## License
 
 Copyright &copy; 2020 Arne Brasseur and Contributors
