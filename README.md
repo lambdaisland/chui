@@ -16,6 +16,12 @@ Modern ClojureScript test runner
 
 See the [Line Dict entry](https://dict.naver.com/linedict/zhendict/dict.html#/cnen/entry/cf6a566ba4a64496b8d8610525f3d9e8) for an audio sample.
 
+### Funded by Pitch
+
+We want to thank [Pitch](https://pitch.com) for funding the initial development
+of Chui, and their continuing support of the Clojure and ClojureScript
+ecosystem.
+
 <!-- opencollective -->
 ### Support Lambda Island Open Source
 
