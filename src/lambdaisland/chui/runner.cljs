@@ -263,6 +263,7 @@
        (p/let [ctx ctx-promise]
          (update-run assoc
                      :ctx ctx
+                     :end (js/Date.)
                      :done? true))))))
 
 (defn terminate!
