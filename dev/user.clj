@@ -5,7 +5,7 @@
 
 (defn cljs-repl
   ([]
-   (cljs-repl :main))
+   (cljs-repl :kaocha))
   ([build-id]
    ((jit shadow.cljs.devtools.server/start!))
    ((jit shadow.cljs.devtools.api/watch) build-id)

@@ -5,13 +5,12 @@
  {8347 "classpath:public"}
 
  :builds
- {:main
+ {:kaocha
   {:target     :browser-test
-   :runner-ns  lambdaisland.chui.shadowrun
+   :runner-ns  kaocha.chui.client
    :test-dir   "resources/public"
    :asset-path "/ui"
    :ns-regexp  "-test$"
    :devtools   {:repl-pprint true}}}
 
- :cache-blockers #{lambdaisland.chui.styles}
- }
+ :cache-blockers #{lambdaisland.chui.styles}}

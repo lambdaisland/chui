@@ -1,4 +1,8 @@
 #kaocha/v1
 {:plugins [:kaocha.plugin/notifier
            :kaocha.plugin/print-invocations
-           :kaocha.plugin/profiling]}
+           :kaocha.plugin/profiling]
+ :tests [{:type :kaocha.type/chui
+          :chui/compile-fn kaocha.chui/compile-shadow
+          :chui/launch-fn kaocha.chui/launch-browser
+          }]}
