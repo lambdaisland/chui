@@ -24,13 +24,8 @@
 (defonce transit-write-handlers (atom {}))
 
 (defn initial-state []
-  (let [recv-ch (async/chan 8)
-        recv-mult (async/mult recv-ch)]
-    {:running? false
-     :recv-ch recv-ch
-     :recv-mult recv-mult
-     :listeners {}
-     :clients {}}))
+  {:running? false
+   :clients {}})
 
 (defonce server-state (atom (initial-state)))
 
@@ -38,21 +33,6 @@
   (some #(when (identical? channel (:channel %))
            %)
         (vals (:clients state))))
-
-(defn register-tester [id recv]
-  (swap! server-state
-         (fn [state]
-           (async/tap (:recv-mult state) recv)
-           (update state :testers
-                   assoc id
-                   {:id id :recv recv}))))
-
-(defn unregister-tester [id]
-  (swap! server-state
-         (fn [state]
-           (when-let [{recv :recv} (get-in state [:testers id])]
-             (async/untap (:recv-mult state) recv))
-           (update state :testers dissoc id))))
 
 (defn list-clients []
   (vals (:clients @server-state)))
@@ -62,6 +42,12 @@
 
 (defn swap-client! [cid f & args]
   (apply swap! server-state update-in [:clients cid] f args))
+
+(defn tap-client [cid chan]
+  (async/tap (:mult (client cid)) chan))
+
+(defn untap-client [cid chan]
+  (async/untap (:mult (client cid)) chan))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
@@ -83,7 +69,9 @@
 (defmulti handle-message (fn [msg _] (:type msg)))
 
 (defmethod handle-message :default [msg client]
-  (log/debug :unhandled-message msg :client client))
+  (log/debug :put-message msg)
+  (when-let [chan (:chan client)]
+    (async/>!! chan msg)))
 
 (defmethod handle-message :pong [msg client]
   (log/trace :pong (:client-id client)))
@@ -117,10 +105,13 @@
 
 (defmethod handle-message :kaocha.chui.client/connected [{:keys [client-info]} client]
   (log/trace :kaocha.chui.client/connected client-info)
-  (swap-client!
-   (:client-id client-info)
-   (constantly
-    (assoc client-info :channel (:channel client)))))
+  (let [client (merge client client-info)
+        client (if-not (and (:mult client) (:chan client))
+                 (let [chan (async/chan 8)
+                       mult (async/mult chan)]
+                   (assoc client :chan chan :mult mult))
+                 client)]
+    (swap-client! (:client-id client-info) (constantly client))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server
@@ -201,46 +192,9 @@
   (stop!)
   (broadcast! {:type :fetch-test-data})
 
-
-  (server/start s)
-
-  (server/stop s)
-  (swap! server-state dissoc :clients)
   @server-state
-  (map :last-contact (list-clients))
-  (map #(.isOpen %) (keep :channel (list-clients)))
 
-  events
 
   (gc-clients!)
 
-  (def events (atom []))
-
-  (def handlers
-    {:on-open    (fn [{:keys [channel] :as e}]
-                   (swap! events conj [:open e]))
-     :on-message (fn [{:keys [channel data] :as e}]
-                   (swap! events conj [:message e]))
-     :on-close   (fn [{:keys [channel ws-channel] :as e}]
-                   (swap! events conj [:close e]))
-     :on-error   (fn [{:keys [channel error] :as e}]
-                   (swap! events conj [:error e]))})
-
-  (def handler (ws/ws-handler handlers))
-  ;; => #object[io.undertow.websockets.WebSocketProtocolHandshakeHandler 0x491f1684 "io.undertow.websockets.WebSocketProtocolHandshakeHandler@491f1684"]
-
-  (def server  (server/create handler))
-  ;; => #object[io.undertow.Undertow 0x4bf259ca "io.undertow.Undertow@4bf259ca"]
-
-  (server/start server)
-  ;;=> nil
-
-  (ancestors (class (:channel (last (first @events))))))
-  ;; => #{java.lang.Object org.xnio.channels.Configurable java.io.Closeable
-  ;;      io.undertow.websockets.core.protocol.version07.WebSocket07Channel
-  ;;      java.lang.AutoCloseable org.xnio.channels.BoundChannel
-  ;;      io.undertow.websockets.core.WebSocketChannel
-  ;;      org.xnio.channels.CloseableChannel
-  ;;      io.undertow.server.protocol.framed.AbstractFramedChannel
-  ;;      java.nio.channels.Channel java.nio.channels.InterruptibleChannel
-  ;;      org.xnio.channels.ConnectedChannel}
+  )

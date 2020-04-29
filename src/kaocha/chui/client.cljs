@@ -164,12 +164,12 @@
   (map #(dissoc % :test :var :ns) vars-data))
 
 (defn scrub-test-data [test-data]
-  (into {}
-        (map (juxt key (comp #(update % :tests scrub-var-data) val)))
-        test-data))
+  (map (comp #(update % :tests scrub-var-data) val)
+       test-data))
 
 (defmethod handle-message :fetch-test-data [msg]
   (send! {:type :test-data
+          :reply-to (:id msg)
           :test-data (scrub-test-data
                       @test-data/test-ns-data)}))
 
