@@ -27,7 +27,7 @@
   (runner/terminate! done))
 
 (defn ^:export init []
-  (let [app (gdom/createElement "chui-container")]
+  (let [app (gdom/createElement "div")]
     (gdom/setProperties app #js {:id "chui-container"})
     (gdom/append js/document.body app))
   (ui/render! (.getElementById js/document "chui-container"))

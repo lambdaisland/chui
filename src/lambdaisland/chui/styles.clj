@@ -56,7 +56,7 @@
            :height "100vh"}]
    [:body {:margin 0
            :height "100%"}]
-   [:#app {:height "100%"}
+   [:#chui :#chui-container {:height "100%"}
     [:> [:div {:height "100%"
                :display :grid
                :grid-template-rows "auto 1fr"

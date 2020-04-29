@@ -5,11 +5,11 @@
             [lambdaisland.chui.interceptor :as intor]
             [lambdaisland.chui.test-data :as test-data]
             [lambdaisland.glogi :as log]
-            [reagent.core :as reagent]))
+            [goog.async.nextTick]))
 
-(defonce state (reagent/atom {:runs []
-                              :ctx-promise nil
-                              :selection nil}))
+(defonce state (atom {:runs []
+                      :ctx-promise nil
+                      :selection nil}))
 
 (defn current-run []
   (last (:runs @state)))
@@ -86,6 +86,7 @@
                (t/update-current-env! [:testing-vars] conj the-var)
                (t/update-current-env! [:report-counters :test] inc)
                (update-run-ns update :vars conj (assoc test
+                                                       :start (js/Date.)
                                                        :assertions []
                                                        :done? false))
                ctx)}
@@ -93,7 +94,9 @@
      {:name :end-var-update-env
       :enter (fn [ctx]
                (t/update-current-env! [:testing-vars] rest)
-               (update-run-var assoc :done? true)
+               (update-run-var assoc
+                               :end (js/Date.)
+                               :done? true)
                ctx)}
      (report-intor {:type :end-test-var :var the-var})]))
 
@@ -112,9 +115,11 @@
      [(report-intor {:type :begin-test-ns :ns ns})
       {:name :begin-ns-update-run
        :enter (fn [ctx]
-                (update-run update :nss conj {:ns ns
-                                              :done? false
-                                              :vars []})
+                (update-run update :nss
+                            conj {:ns ns
+                                  :start (js/Date.)
+                                  :done? false
+                                  :vars []})
                 ctx)}]
      (fixture-intors ns :before :once once-fixtures)
      (->> tests
@@ -128,7 +133,10 @@
      (fixture-intors ns :after :once once-fixtures)
      {:name :end-ns-update-run
       :enter (fn [ctx]
-               (update-run update :nss assoc :done? true)
+               (update-run update :nss
+                           assoc
+                           :end (js/Date.)
+                           :done? true)
                ctx)}
      [(report-intor {:type :end-test-ns :ns ns})])))
 
@@ -150,6 +158,16 @@
               (js/setTimeout (fn []
                                (resolve ctx))
                              ms)))})
+
+(defn next-tick-intor
+  "Interceptor which continues on the next tick, used to allow the UI to update."
+  []
+  {:name ::next-tick
+   :enter (fn [ctx]
+            (p/promise [resolve]
+              (goog.async.nextTick
+               (fn []
+                 (resolve ctx)))))})
 
 ;; cljs.test's version of this is utterly broken. This version is not great but
 ;; at least it kind of works in both Firefox and Chrome. To do this properly
@@ -237,7 +255,9 @@
      (let [ctx-promise (-> {::intor/terminate? terminate?
                             ::intor/on-context #(update-run assoc :ctx %)}
                            (intor/enqueue [log-error-intor])
-                           (intor/enqueue #_(interpose (slowdown-intor 300)) (mapcat #(apply ns-intors %) tests))
+                           (intor/enqueue #_(interpose (slowdown-intor 300))
+                                          (interpose (next-tick-intor)
+                                                     (mapcat #(apply ns-intors %) tests)))
                            intor/execute)]
        (update-run assoc :donep ctx-promise)
        (p/let [ctx ctx-promise]
