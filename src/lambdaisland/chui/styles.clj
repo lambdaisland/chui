@@ -194,8 +194,7 @@
     [:aside {:padding ".50rem .5rem"}
      [:small {:font-style :italic
               :color :darkgray
-              :white-space :nowrap}]]
-    [:.skip {:color :darkgray}]]
+              :white-space :nowrap}]]]
 
    [:.run
     {:margin-bottom "1rem"
