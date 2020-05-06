@@ -20,7 +20,7 @@
 
 (defn compile-shadow [testable]
   (log/info :compile-shadow (select-keys testable [:kaocha.testable/id :shadow/build-id]))
-  (shadow-server/start!)
+  #_(shadow-server/start!)
   (let [build-state (shadow-api/compile! (:shadow/build-id testable) {})
         build-config (:shadow.build/config build-state)]
 

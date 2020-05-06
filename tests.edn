@@ -1,7 +1,7 @@
 #kaocha/v1
 {:plugins [:kaocha.plugin/notifier
            :kaocha.plugin/print-invocations
-           :kaocha.plugin/profiling]
+           ]
 
  :tests [{:type              :kaocha.type/cljs2
           :chui/compile-hook kaocha.chui/compile-shadow

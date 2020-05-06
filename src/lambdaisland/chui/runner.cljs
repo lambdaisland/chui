@@ -203,15 +203,13 @@
           (mapcat #(wrap-each-fixtures ns % each-fixtures)))
      (end-ns-intors ns once-fixtures))))
 
-(def log-error-intor
-  {:name ::log-error
-   :error (fn [ctx error]
-            (t/report
-             {:type :error
-              :message "Uncaught exception, not in assertion."
-              :expected nil
-              :actual (ex-cause error)})
-            (dissoc ctx :error))})
+(defn on-intor-error [ctx error]
+  (t/report
+   {:type :error
+    :message "Uncaught exception, not in assertion."
+    :expected nil
+    :actual (ex-cause error)})
+  ctx)
 
 ;; for debugging / visualizing progress
 (defn slowdown-intor [ms]
@@ -264,7 +262,8 @@
     {:id (random-uuid)
      :nss []
      :ctx {::intor/terminate? terminate?
-           ::intor/on-context #(update-run assoc :ctx %)}
+           ::intor/on-context #(update-run assoc :ctx %)
+           ::intor/on-error on-intor-error}
      :done? false
      :start (js/Date.)
      :terminate! #(reset! terminate? true)
@@ -285,7 +284,6 @@
                  (assoc :test-count cnt))]
      (add-test-run! run)
      (let [ctx-promise (-> (:ctx run)
-                           (intor/enqueue [log-error-intor])
                            (intor/enqueue #_(interpose (slowdown-intor 300))
                                           (interpose (next-tick-intor)
                                                      (mapcat #(apply ns-intors %) tests)))

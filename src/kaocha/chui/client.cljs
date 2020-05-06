@@ -22,9 +22,7 @@
   (:import [goog.string StringBuffer])
   (:require-macros [kaocha.cljs.hierarchy :as hierarchy]))
 
-(log/set-levels
- '{:glogi/root :trace
-   lambdaisland.chui.interceptor :warn})
+(log/set-levels '{:glogi/root :debug})
 
 (def socket nil)
 
@@ -178,7 +176,6 @@
 
 (defn execute-chain [intors]
   (-> (:ctx (runner/current-run))
-      (intor/enqueue [runner/log-error-intor])
       (intor/enqueue intors)
       intor/execute))
 
