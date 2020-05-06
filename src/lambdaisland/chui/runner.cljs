@@ -11,8 +11,17 @@
                       :ctx-promise nil
                       :selection nil}))
 
+(:runs @state)
+
+(defonce t-report t/report)
+
 (defn current-run []
   (last (:runs @state)))
+
+(set! t/report (fn [m]
+                 (when-let [report (:report (current-run))]
+                   (report m))
+                 (t-report m)))
 
 (defn update-run [f & args]
   (swap! state
@@ -35,8 +44,52 @@
     (t/update-current-env! [:report-counters] (constantly {:test 0 :pass 0 :fail 0 :error 0}))
     counters))
 
-(defn new-test-run! [m]
-  (dec (count (swap! state update :runs conj m))))
+(defn add-test-run! [m]
+  (dec (count (swap! state update :runs conj m)))
+  (set! t/*current-env* (t/empty-env)))
+
+(defn running? []
+  (when-let [run (current-run)]
+    (not (:done? run))))
+
+;; cljs.test's version of this is utterly broken. This version is not great but
+;; at least it kind of works in both Firefox and Chrome. To do this properly
+;; we'll have to use something like stacktrace.js
+(defn file-and-line []
+  (let [frame (-> (js/Error.)
+                  .-stack
+                  (str/split #"\n")
+                  (->> (drop-while #(not (str/includes? % "do_report"))))
+                  (nth 1)
+                  (str/split #":"))
+        line-col (drop (- (count frame) 2) frame)
+        file (str/join ":" (take (- (count frame) 2) frame))]
+    {:file file
+     :line (js/parseInt (re-find #"\d+" (first line-col)) 10)
+     :column (js/parseInt (re-find #"\d+" (second line-col)) 10)}))
+
+(defmulti report :type)
+(defmethod report :default [_])
+
+(defmethod report :fail [m]
+  (update-run-var update :assertions conj
+                  (merge
+                   m
+                   (file-and-line)
+                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
+
+(defmethod report :error [m]
+  (update-run-var update :assertions conj
+                  (merge
+                   m
+                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
+
+(defmethod report :pass [m]
+  (update-run-var update :assertions conj
+                  (merge
+                   m
+                   (file-and-line)
+                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
 
 (defn cljs-test-intor
   "Turn a function which may return a cljs.test IAsyncTest into a promise-based interceptor.
@@ -106,39 +159,49 @@
       (= :after stage)
       reverse)))
 
+(defn begin-ns-intors [ns once-fixtures]
+  (concat
+   [(report-intor {:type :begin-test-ns :ns ns})
+    {:name :begin-ns-update-run
+     :enter (fn [ctx]
+              (update-run update :nss
+                          conj {:ns ns
+                                :start (js/Date.)
+                                :done? false
+                                :vars []})
+              ctx)}]
+   (fixture-intors ns :before :once once-fixtures)))
+
+(defn end-ns-intors [ns once-fixtures]
+  (concat
+   (fixture-intors ns :after :once once-fixtures)
+   {:name :end-ns-update-run
+    :enter (fn [ctx]
+             (update-run update :nss
+                         assoc
+                         :end (js/Date.)
+                         :done? true)
+             ctx)}
+   [(report-intor {:type :end-test-ns :ns ns})]))
+
+(defn wrap-each-fixtures [ns intors each-fixtures]
+  (concat
+   (fixture-intors ns :before :each each-fixtures)
+   intors
+   (fixture-intors ns :after :each each-fixtures)))
+
 (defn ns-intors
   "Sequence of interceptors which handle a single namespace, including
   once-fixtures and each-fixtures."
   [ns {:keys [meta tests each-fixtures once-fixtures] :as ns-data}]
   (when-let [tests (seq tests)]
     (concat
-     [(report-intor {:type :begin-test-ns :ns ns})
-      {:name :begin-ns-update-run
-       :enter (fn [ctx]
-                (update-run update :nss
-                            conj {:ns ns
-                                  :start (js/Date.)
-                                  :done? false
-                                  :vars []})
-                ctx)}]
-     (fixture-intors ns :before :once once-fixtures)
+     (begin-ns-intors ns once-fixtures)
      (->> tests
           (sort-by (comp :line :meta))
           (map var-intors)
-          (mapcat (fn [var-intors]
-                    (concat
-                     (fixture-intors ns :before :each once-fixtures)
-                     var-intors
-                     (fixture-intors ns :after :each once-fixtures)))))
-     (fixture-intors ns :after :once once-fixtures)
-     {:name :end-ns-update-run
-      :enter (fn [ctx]
-               (update-run update :nss
-                           assoc
-                           :end (js/Date.)
-                           :done? true)
-               ctx)}
-     [(report-intor {:type :end-test-ns :ns ns})])))
+          (mapcat #(wrap-each-fixtures ns % each-fixtures)))
+     (end-ns-intors ns once-fixtures))))
 
 (def log-error-intor
   {:name ::log-error
@@ -169,43 +232,6 @@
                (fn []
                  (resolve ctx)))))})
 
-;; cljs.test's version of this is utterly broken. This version is not great but
-;; at least it kind of works in both Firefox and Chrome. To do this properly
-;; we'll have to use something like stacktrace.js
-(defn file-and-line []
-  (let [frame (-> (js/Error.)
-                  .-stack
-                  (str/split #"\n")
-                  (->> (drop-while #(not (str/includes? % "do_report"))))
-                  (nth 1)
-                  (str/split #":"))
-        line-col (drop (- (count frame) 2) frame)
-        file (str/join ":" (take (- (count frame) 2) frame))]
-    {:file file
-     :line (js/parseInt (re-find #"\d+" (first line-col)) 10)
-     :column (js/parseInt (re-find #"\d+" (second line-col)) 10)}))
-
-(defmethod t/report [::default :fail] [m]
-  (update-run-var update :assertions conj
-                  (merge
-                   m
-                   (file-and-line)
-                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
-
-(defmethod t/report [::default :error] [m]
-  (update-run-var update :assertions conj
-                  (merge
-                   m
-                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))))
-
-(defmethod t/report [::default :pass] [m]
-  (update-run-var update :assertions conj
-                  (merge
-                   m
-                   (file-and-line)
-                   (select-keys t/*current-env* [:testing-contexts :testing-vars]))
-                  ))
-
 (defn var-summary [{:keys [assertions]}]
   (assoc (frequencies (map :type assertions)) :test 1))
 
@@ -233,6 +259,17 @@
 
 (def pass? (complement fail?))
 
+(defn test-run []
+  (let [terminate? (atom false)]
+    {:id (random-uuid)
+     :nss []
+     :ctx {::intor/terminate? terminate?
+           ::intor/on-context #(update-run assoc :ctx %)}
+     :done? false
+     :start (js/Date.)
+     :terminate! #(reset! terminate? true)
+     :report report}))
+
 (defn run-tests
   ([]
    (let [tests @test-data/test-ns-data]
@@ -243,17 +280,11 @@
               (remove (comp :test/skip :meta val))
               tests)))))
   ([tests]
-   (let [terminate? (atom false)]
-     (new-test-run! {:id (random-uuid)
-                     :test-count (apply + (map (comp  count :tests val) tests))
-                     :terminate! #(reset! terminate? true)
-                     :nss []
-                     :ctx {}
-                     :done? false
-                     :start (js/Date.)})
-     (set! t/*current-env* (t/empty-env ::default))
-     (let [ctx-promise (-> {::intor/terminate? terminate?
-                            ::intor/on-context #(update-run assoc :ctx %)}
+   (let [cnt (apply + (map (comp  count :tests val) tests))
+         run (-> (test-run)
+                 (assoc :test-count cnt))]
+     (add-test-run! run)
+     (let [ctx-promise (-> (:ctx run)
                            (intor/enqueue [log-error-intor])
                            (intor/enqueue #_(interpose (slowdown-intor 300))
                                           (interpose (next-tick-intor)
@@ -288,4 +319,7 @@
       (f m)))
 
   (get @test-data/test-ns-data 'pitch.app.block.table.layout-test)
+
+  (current-run)
+
   )

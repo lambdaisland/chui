@@ -10,15 +10,21 @@
             [kaocha.cljs.cognitect.transit :as transit]
             [kaocha.cljs.websocket :as ws]
             [kaocha.type.cljs]
+            [lambdaisland.chui.ui :as ui]
+            [lambdaisland.chui.interceptor :as intor]
             [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.test-data :as test-data]
             [lambdaisland.glogi :as log]
             [pjstadig.print :as humane-print]
-            [platform :as platform])
+            [platform :as platform]
+            [goog.dom :as gdom]
+            [kitchen-async.promise :as p])
   (:import [goog.string StringBuffer])
   (:require-macros [kaocha.cljs.hierarchy :as hierarchy]))
 
-(log/set-level :glogi/root :trace)
+(log/set-levels
+ '{:glogi/root :trace
+   lambdaisland.chui.interceptor :warn})
 
 (def socket nil)
 
@@ -127,38 +133,83 @@
    :cljs.test/message m
    :cljs.test/testing-contexts (:testing-contexts (t/get-current-env))})
 
-(defmethod t/report [:kaocha.type/cljs ::propagate] [m]
-  (send! (cljs-test-msg m)))
-
-(defmethod t/report [:kaocha.type/cljs :fail] [m]
-  (send! (-> m
-             (assoc :kaocha.report/printed-expression
-                    (pretty-print-failure m))
-             cljs-test-msg)))
-
-(defmethod t/report [:kaocha.type/cljs :error] [m]
-  (let [error      (:actual m)
-        stacktrace (.-stack (:actual m))]
-    (send! (-> m
-               (assoc :kaocha.report/printed-expression
-                      (str (str/trim stacktrace) "\n")
-                      :kaocha.report/error-type
-                      (str "js/" (.-name error))
-                      :message
-                      (or (:message m) (.-message error)))
-               cljs-test-msg))))
-
-(doseq [t (hierarchy/known-keys)]
-  (derive t ::propagate))
-
-(t/update-current-env! [:reporter] (constantly :kaocha.type/cljs))
+(defn wrap-report [report]
+  (fn [m]
+    (send!
+     (cljs-test-msg
+      (case (:type m)
+        :fail
+        (assoc m :kaocha.report/printed-expression
+               (pretty-print-failure m))
+        :error
+        (let [error      (:actual m)
+              stacktrace (.-stack (:actual m))]
+          (assoc m :kaocha.report/printed-expression
+                 (str (str/trim stacktrace) "\n")
+                 :kaocha.report/error-type
+                 (str "js/" (.-name error))
+                 :message
+                 (or (:message m) (.-message error))))
+        m)))
+    (report m)))
 
 (defmulti handle-message :type)
+
 (defmethod handle-message :default [msg]
   (log/debug :unhandled-message msg))
 
 (defmethod handle-message :ping [msg]
   (send! {:type :pong}))
+
+(defmethod handle-message :start-run [msg]
+  (when (runner/running?)
+    (runner/terminate!))
+  (runner/add-test-run! (-> (runner/test-run)
+                            (assoc :test-count (:test-count msg)
+                                   :remote? true)
+                            (update :report wrap-report)))
+  (send! {:type :run-started :reply-to (:id msg)}))
+
+(defmethod handle-message :finish-run [msg]
+  (runner/update-run assoc
+                     :end (js/Date.)
+                     :done? true)
+  (send! {:type :run-finished :reply-to (:id msg)}))
+
+(defn execute-chain [intors]
+  (-> (:ctx (runner/current-run))
+      (intor/enqueue [runner/log-error-intor])
+      (intor/enqueue intors)
+      intor/execute))
+
+(defmethod handle-message :start-ns [{:keys [ns] :as msg}]
+  (p/let [ctx (execute-chain (runner/begin-ns-intors ns (get @test-data/test-ns-data ns)))]
+    (runner/update-run assoc :ctx ctx)
+    (send! {:type :ns-started :reply-to (:id msg)})))
+
+(defmethod handle-message :finish-ns [{:keys [ns] :as msg}]
+  (p/let [ctx (execute-chain (runner/end-ns-intors ns (get @test-data/test-ns-data ns)))]
+    (runner/update-run assoc :ctx ctx)
+    (send! {:type :ns-finished :reply-to (:id msg)})))
+
+(defmethod handle-message :run-test [{:keys [test] :as msg}]
+  (let [ns        (symbol (namespace test))
+        ns-data   (get @test-data/test-ns-data ns)
+        test-data (some #(when (= test (:name %))
+                           %)
+                        (:tests ns-data))]
+    (p/let [ctx (execute-chain (runner/wrap-each-fixtures
+                                ns
+                                (runner/var-intors test-data)
+                                (:each-fixtures ns-data)))]
+      (runner/update-run assoc :ctx ctx)
+      (send! {:type :test-finished
+              :reply-to (:id msg)
+              :summary (runner/var-summary (->> (runner/current-run)
+                                                :nss
+                                                (some #(when (= (:ns %) ns) %))
+                                                :vars
+                                                (some #(when (= (:name %) test) %))))}))))
 
 (defn scrub-var-data [vars-data]
   (map #(dissoc % :test :var :ns) vars-data))
@@ -207,3 +258,11 @@
     (ws/close! socket)))
 
 (connect! 8080)
+
+;; temporary, for testing
+(when-not (.getElementById js/document "chui-container")
+  (let [app (gdom/createElement "div")]
+    (gdom/setProperties app #js {:id "chui-container"})
+    (gdom/append js/document.body app)))
+
+(ui/render! (.getElementById js/document "chui-container"))

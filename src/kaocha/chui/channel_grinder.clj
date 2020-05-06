@@ -6,23 +6,24 @@
 (defn execute [chan
                {:keys [timeout handlers result init]
                 :or {init {}
-                     timeout 15000}}]
+                     timeout 15000
+                     result :done?}}]
   (let [poll #(async/alt!!
                 chan ([msg _] msg)
                 (async/timeout timeout) ([_ _] :timeout))]
     (loop [message (poll)
-           state init]
-      (log/trace (:type message) message :state state)
+           ctx init]
+      (log/trace :message message :ctx ctx)
 
       (if (= :timeout message)
-        (if-let [timeout-handler (get handlers :timeout)]
-          (timeout-handler state)
+        (if-let [timeout-handler (get handlers :timeout #(throw (ex-info "Timeout" {::ctx %})))]
+          (timeout-handler ctx)
           :timeout)
 
         (if-let [handler (get handlers (:type message))]
-          (let [state (handler message state)]
-            #_(prn "    STATE" state)
-            (if-let [result (result state)]
+          (let [ctx (handler message ctx)]
+            #_(prn "    CTX" ctx)
+            (if-let [result (result ctx)]
               result
-              (recur (poll) state)))
-          (recur (poll) state))))))
+              (recur (poll) ctx)))
+          (recur (poll) ctx))))))

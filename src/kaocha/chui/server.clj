@@ -5,7 +5,8 @@
             [clojure.core.async :as async]
             [ring.middleware.params :as ring-params]
             [ring.middleware.keyword-params :as ring-keyword-params]
-            [kaocha.chui.log :as log])
+            [kaocha.chui.log :as log]
+            [clojure.string :as str])
   (:import (java.io ByteArrayInputStream
                     ByteArrayOutputStream)
            (java.util UUID)
@@ -103,15 +104,31 @@
   (log/trace :ws-send {:client-id client-id :message message})
   (WebSockets/sendText (to-transit message) (get-in @server-state [:clients client-id :channel]) nil))
 
+(defn humanized-id [client clients]
+  (let [platform-name (str/lower-case (first (str/split (:platform client) #" ")))
+        existing-ids (set (map :humanized-id clients))]
+    (prn existing-ids)
+    (->> (next (range))
+         (map #(keyword (str platform-name "-" %)))
+         (remove existing-ids)
+         first)))
+
 (defmethod handle-message :kaocha.chui.client/connected [{:keys [client-info]} client]
   (log/trace :kaocha.chui.client/connected client-info)
   (let [client (merge client client-info)
         client (if-not (and (:mult client) (:chan client))
                  (let [chan (async/chan 8)
                        mult (async/mult chan)]
-                   (assoc client :chan chan :mult mult))
+                   (assoc client
+                          :chan chan
+                          :mult mult))
                  client)]
-    (swap-client! (:client-id client-info) (constantly client))))
+    (swap! server-state
+           update :clients
+           (fn [clients]
+             (assoc clients
+                    (:client-id client-info)
+                    (assoc client :humanized-id (humanized-id client (vals clients))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server
@@ -163,7 +180,7 @@
     stop?))
 
 (defn start! [opts]
-  (log/config :pohjavirta opts)
+  (log/config :pohjavirta/config opts)
   (when-not (running?)
     (let [server (server/create (handler))]
       (swap! server-state

@@ -8,6 +8,7 @@
  {:kaocha
   {:target     :browser-test
    :runner-ns  kaocha.chui.client
+   ;; :runner-ns lambdaisland.chui.shadowrun
    :test-dir   "resources/public"
    :asset-path "/ui"
    :ns-regexp  "-test$"

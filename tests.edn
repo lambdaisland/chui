@@ -3,9 +3,10 @@
            :kaocha.plugin/print-invocations
            :kaocha.plugin/profiling]
 
- :tests [{:type              :kaocha.type/chui
+ :tests [{:type              :kaocha.type/cljs2
           :chui/compile-hook kaocha.chui/compile-shadow
           :chui/connect-hook kaocha.chui/launch-browser
+          :chui/clients-hook kaocha.chui/all-connected-clients
           :chui/browser-url  "http://localhost:8347"
           :chui/open-url?    :auto
           :shadow/build-id   :kaocha
