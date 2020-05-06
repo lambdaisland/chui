@@ -64,9 +64,10 @@
   (let [interceptor (peek queue)
         new-queue   (pop queue)
         new-stack   (conj stack interceptor)
-        new-context (assoc ctx ::queue new-queue ::stack new-stack)]
+        new-context (assoc ctx ::queue new-queue #_#_ ::stack new-stack)]
     (try-stage :enter interceptor new-context)))
 
+#_
 (defn leave-1
   "Invoke the `:leave` stage of the next interceptor.
 
@@ -78,6 +79,7 @@
         new-context (assoc ctx ::stack new-stack)]
     (try-stage :leave interceptor new-context)))
 
+#_
 (defn error-1
   "Invoke the `:error` stage of the next interceptor.
 
