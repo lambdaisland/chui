@@ -282,21 +282,27 @@
            [:footer
             [:p [summary sum]]]])))]])
 
+(defn- filter'n-run []
+  (let [{:keys [query]} @ui-state]
+    [:div.search-bar.card
+     [:input {:type :search
+              :value query
+              :on-change (fn [e]
+                           (let [query (.. e -target -value)]
+                             (set-query! query)))
+              :on-key-up (fn [e]
+                           (when (= (.-key e) "Enter")
+                             (run-tests)))
+              :placeholder "namespace"}]
+     [test-stop-button]]))
+
 (defn test-selector []
   (reagent/with-let [this (reagent/current-component)
                      _ (add-watch test-data/test-ns-data ::rerender #(reagent/force-update this))]
     (let [{:keys [selected]} @runner-state
           {:keys [query]} @ui-state]
       [:section.column-namespaces
-       [:div.search-bar.card
-        [:input {:type "search"
-                 ;; :auto-focus true
-                 :value query
-                 :on-change (fn [e]
-                              (let [query (.. e -target -value)]
-                                (set-query! query)))
-                 :placeholder "namespace"}]
-        [test-stop-button]]
+       [filter'n-run]
        [:div.namespace-selector
         (for [{tests :tests
                ns-sym :name
