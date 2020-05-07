@@ -161,6 +161,7 @@
 (defmethod handle-message :start-run [msg]
   (when (runner/running?)
     (runner/terminate!))
+  (runner/install-custom-reporter)
   (runner/add-test-run! (-> (runner/test-run)
                             (assoc :test-count (:test-count msg)
                                    :remote? true)
