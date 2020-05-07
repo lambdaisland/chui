@@ -7,6 +7,11 @@
             [lambdaisland.glogi :as log]
             [goog.async.nextTick]))
 
+;; If set to true then returning a promise from a `deftest` block will turn the
+;; test into an async test, which finishes when the promise resolves, as an
+;; alternative to using `cljs.test/async` blocks.
+(goog-define ^boolean PROMISE_ASYNC_TEST false)
+
 (defonce state (atom {:runs []
                       :ctx-promise nil
                       :selection nil}))
@@ -112,7 +117,8 @@
                   (result
                    (fn []
                      (resolve ctx))))
-                (instance? js/Promise result)
+                (and PROMISE_ASYNC_TEST
+                     (instance? js/Promise result))
                 (p/promise [resolve]
                   (.then result
                          (fn [_]
