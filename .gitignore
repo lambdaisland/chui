@@ -10,3 +10,4 @@ node_modules/
 .DS_Store
 resources/public/ui
 resources/public
+package-lock.json

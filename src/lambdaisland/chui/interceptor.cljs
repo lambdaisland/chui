@@ -44,7 +44,6 @@
           (execute* obj)))
       (catch :default t
         (-> ctx
-            (dissoc ::queue)
             (assoc ::error (throwable->ex-info t interceptor stage))
             execute*)))
     (execute* ctx)))
@@ -65,9 +64,10 @@
   (let [interceptor (peek queue)
         new-queue   (pop queue)
         new-stack   (conj stack interceptor)
-        new-context (assoc ctx ::queue new-queue ::stack new-stack)]
+        new-context (assoc ctx ::queue new-queue #_#_ ::stack new-stack)]
     (try-stage :enter interceptor new-context)))
 
+#_
 (defn leave-1
   "Invoke the `:leave` stage of the next interceptor.
 
@@ -79,6 +79,7 @@
         new-context (assoc ctx ::stack new-stack)]
     (try-stage :leave interceptor new-context)))
 
+#_
 (defn error-1
   "Invoke the `:error` stage of the next interceptor.
 
@@ -92,18 +93,20 @@
 
 
 (defn execute*
-  "Execute an interceptor chain. Takes a context map with a ::queue of
-  interceptors to be executed. Other special values that can be passed in as
-  part of the context:
+  "Modified interceptor chain, only processes the enter chain. Takes a context map
+  with a ::queue of interceptors to be executed. Other special values that can
+  be passed in as part of the context:
 
   - `::on-context` a callback that gets called at every iteration with the new
     context map. Useful for keeping track of progress. Note that `::on-context`
     gets called on the *start* of every iteration. To get the final context see
     `::resolve`/`::reject`.
+  - `::on-error` error handler, receives the context and the error, must return
+    a context
   - `::terminate?` an atom which, when set to true, will short circuit the
     process at the next possible occasion
   - `::resolve` function that gets called with the final context map"
-  [{::keys [queue stack error on-context terminate? resolve] :as ctx}]
+  [{::keys [queue stack error on-context on-error terminate? resolve] :as ctx}]
   (log/trace :execute ctx)
 
   (when on-context
@@ -111,9 +114,10 @@
 
   (cond
     (and terminate? @terminate?) (resolve (assoc ctx ::terminated? true))
-    (and error (seq stack))      (error-1 ctx)
+    (and error on-error)         (recur (dissoc (on-error ctx error) ::error))
+    ;; (and error (seq stack))      (error-1 ctx)
     (seq queue)                  (enter-1 ctx)
-    (seq stack)                  (leave-1 ctx)
+    ;; (seq stack)                  (leave-1 ctx)
     :else                        (resolve ctx)))
 
 (defn execute [ctx]

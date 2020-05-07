@@ -2,10 +2,9 @@
 
  :deps
  {org.clojure/clojure           {:mvn/version "1.10.1"}
-  org.clojure/clojurescript     {:mvn/version "1.10.597"}
-  com.bhauman/cljs-test-display {:mvn/version "0.1.1"}
+  org.clojure/clojurescript     {:mvn/version "1.10.758"}
   reagent                       {:mvn/version "0.10.0"}
-  lambdaisland/glogi            {:mvn/version "1.0-60"}
+  lambdaisland/glogi            {:mvn/version "1.0.63"}
   lambdaisland/deep-diff2       {:mvn/version "2.0.0-93"}
   kitchen-async                 {:mvn/version "0.1.0-SNAPSHOT"}}
 
@@ -17,4 +16,19 @@
 
   :test
   {:extra-paths ["test"]
-   :extra-deps {lambdaisland/kaocha {:mvn/version "0.0-601"}}}}}
+   :extra-deps  {lambdaisland/kaocha      {:mvn/version "0.0-601"}}}
+
+  :chui-remote
+  {:extra-deps
+   {;; pohjavirta contains some java classes that need to be precompiled, so
+    ;; using it straight off git doesn't work. We'll have to either check those
+    ;; in, or put out a release
+    metosin/pohjavirta     {#_#_:git/url "https://github.com/metosin/pohjavirta"
+                            #_#_:sha     "022a44eec9109a0baf93827843eeba15265adea7"
+                            :local/root  "/home/arne/github/pohjavirta"}
+    io.pedestal/pedestal.log       {:mvn/version "0.5.2"}
+    ch.qos.logback/logback-classic {:exclusions  [org.slf4j/slf4j-api org.slf4j/slf4j-nop]
+                                    :mvn/version "1.2.3"}
+    org.clojure/core.async {:mvn/version "1.1.587"}
+    }}
+  }}
