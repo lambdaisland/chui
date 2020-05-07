@@ -7,6 +7,11 @@
             [lambdaisland.glogi :as log]
             [goog.async.nextTick]))
 
+;; If set to true then returning a promise from a `deftest` block will turn the
+;; test into an async test, which finishes when the promise resolves, as an
+;; alternative to using `cljs.test/async` blocks.
+(goog-define ^boolean PROMISE_ASYNC_TEST false)
+
 (defonce state (atom {:runs []
                       :ctx-promise nil
                       :selection nil}))
@@ -18,10 +23,23 @@
 (defn current-run []
   (last (:runs @state)))
 
-(set! t/report (fn [m]
-                 (when-let [report (:report (current-run))]
-                   (report m))
-                 (t-report m)))
+(defn install-custom-reporter
+  "While cljs.test provides a way of extending the report multimethod to capture
+  specific messages, it does not provide an easy way to capture all messages,
+  except for replacing t/report, so that's what we do. This calls whatever
+  reporter in set in the current run, before also delegating to the original
+  multimethod.
+
+  Do this as late as possible, because otherwise any calls to (defmethod
+  t/report ...) will fail."
+  []
+  (set! t/report (fn [m]
+                   (when-let [report (:report (current-run))]
+                     (report m))
+                   (t-report m))))
+
+(defn restore-original-reporter []
+  (set! t/report t-report))
 
 (defn update-run [f & args]
   (swap! state
@@ -112,7 +130,8 @@
                   (result
                    (fn []
                      (resolve ctx))))
-                (instance? js/Promise result)
+                (and PROMISE_ASYNC_TEST
+                     (instance? js/Promise result))
                 (p/promise [resolve]
                   (.then result
                          (fn [_]
@@ -283,6 +302,7 @@
          run (-> (test-run)
                  (assoc :test-count cnt))]
      (add-test-run! run)
+     (install-custom-reporter)
      (let [ctx-promise (-> (:ctx run)
                            (intor/enqueue #_(interpose (slowdown-intor 300))
                                           (interpose (next-tick-intor)
@@ -290,6 +310,7 @@
                            intor/execute)]
        (update-run assoc :donep ctx-promise)
        (p/let [ctx ctx-promise]
+         (restore-original-reporter)
          (update-run assoc
                      :ctx ctx
                      :end (js/Date.)
