@@ -2,12 +2,15 @@
   "Runner namespace to be used with shadow-cljs's :browser-test target.
 
   Not a 1989 fantasy tabletop game."
+  {:dev/always true}
   (:require [goog.dom :as gdom]
             [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.ui :as ui]
             [lambdaisland.chui.test-data :as test-data]
             [lambdaisland.glogi :as log]
             [lambdaisland.glogi.console :as glogi-console]))
+
+(test-data/capture-test-data!)
 
 (glogi-console/install!)
 
@@ -19,7 +22,6 @@
 (defn start []
   ;; for dev, enable this to update the UI on hot reload
   #_(ui/render! (.getElementById js/document "chui-container"))
-  (test-data/capture-test-data!)
   (js/window.requestIdleCallback
    #(ui/run-tests)))
 
