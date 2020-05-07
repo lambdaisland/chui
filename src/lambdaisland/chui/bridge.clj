@@ -1,11 +1,11 @@
-(ns kaocha.chui.server
+(ns lambdaisland.chui.bridge
   (:require [cognitect.transit :as transit]
             [pohjavirta.websocket :as ws]
             [pohjavirta.server :as server]
             [clojure.core.async :as async]
             [ring.middleware.params :as ring-params]
             [ring.middleware.keyword-params :as ring-keyword-params]
-            [kaocha.chui.log :as log]
+            [io.pedestal.log :as log]
             [clojure.string :as str])
   (:import (java.io ByteArrayInputStream
                     ByteArrayOutputStream)

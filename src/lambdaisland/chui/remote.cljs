@@ -1,4 +1,4 @@
-(ns kaocha.chui.client
+(ns lambdaisland.chui.remote
   (:require [cljs.pprint :as pp :include-macros true]
             [cljs.test :as t]
             [clojure.browser.repl :as browser-repl]
@@ -6,10 +6,9 @@
             [goog.dom :as gdom]
             [goog.log :as glog]
             [goog.object :as gobj]
-            [goog.object :as gobj]
+            ;; fixme
             [kaocha.cljs.cognitect.transit :as transit]
             [kaocha.cljs.websocket :as ws]
-            [kaocha.type.cljs]
             [lambdaisland.chui.ui :as ui]
             [lambdaisland.chui.interceptor :as intor]
             [lambdaisland.chui.runner :as runner]
