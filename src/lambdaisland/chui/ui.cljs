@@ -19,7 +19,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; State
 
-(defonce ui-state (reagent/atom {}))
+(defonce ui-state (reagent/atom {:only-failing? true}))
 (defonce runner-state (reagent/atom {}))
 
 ;; We don't want the runner to depend on reagent, but we do want to watch it for
