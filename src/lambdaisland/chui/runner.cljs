@@ -153,7 +153,7 @@
   (let [the-var (:var test)
         test-fn (:test test)]
     [(report-intor {:type :begin-test-var :var the-var})
-     {:name :begint-var-update-env
+     {:name :begin-var-update-env
       :enter (fn [ctx]
                (t/update-current-env! [:testing-vars] conj the-var)
                (t/update-current-env! [:report-counters :test] inc)
