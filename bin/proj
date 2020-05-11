@@ -8,11 +8,12 @@
   :inception-year 2020
   :description    "Modern ClojureScript test runner"
   :modules
-  {:chui-core  {:description "ClojureScript Test Runner Core"}
+  (array-map
+   :chui-core  {:description "ClojureScript Test Runner Core"}
    :chui-ui    {:description "Browser UI for the Chui test runner"}
    :chui-relay {:description "Relay for connecting test tooling to ClojureScript runtimes"
                 :release false}
-   :chui-shadow {:description "Chui-based test runner namespaces to be used with Shadow-cljs"}}})
+   :chui-shadow {:description "Chui-based test runner namespaces to be used with Shadow-cljs"})})
 
 ;; Local Variables:
 ;; mode:clojure
