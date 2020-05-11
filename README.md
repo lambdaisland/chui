@@ -44,6 +44,21 @@ inspecting results.
 See the [Architecture Decision Log](doc/architecture_decision_log.org) for
 technical background.
 
+## Installation
+
+deps.edn
+
+``` clojure
+lambdaisland/chui {:mvn/version "0.0.70"}
+```
+
+project.clj
+
+``` clojure
+[lambdaisland/chui "0.0.70"]
+```
+
+
 ## Quickstart with shadow-cljs
 
 The easiest way to use this right now is with Shadow-cljs's `:browser-test` target.

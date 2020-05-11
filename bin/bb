@@ -78,7 +78,7 @@ if [[ -f bb_deps.edn ]]; then
     cp="$(clojure -Srepro -Sdeps "${deps}" -Spath)"
     mv deps.edn.bak deps.edn
 
-    exec "$bb_path" "-cp" "${cp}" "$@"
+    exec "rlwrap" "$bb_path" "-cp" "${cp}" "$@"
 else
-    exec "$bb_path" "$@"
+    exec "rlwrap" "$bb_path" "$@"
 fi
