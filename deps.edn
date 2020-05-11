@@ -1,34 +1,23 @@
 {:paths ["src" "resources"]
 
  :deps
- {org.clojure/clojure           {:mvn/version "1.10.1"}
-  org.clojure/clojurescript     {:mvn/version "1.10.758"}
-  reagent                       {:mvn/version "0.10.0"}
-  lambdaisland/glogi            {:mvn/version "1.0.63"}
-  lambdaisland/deep-diff2       {:mvn/version "2.0.0-93"}
-  kitchen-async                 {:mvn/version "0.1.0-SNAPSHOT"}}
+ {org.clojure/clojure       {:mvn/version "1.10.1"}
+  org.clojure/clojurescript {:mvn/version "1.10.758"}
+
+  lambdaisland/chui-core  {:mvn/version "0.0"}
+  lambdaisland/chui-ui    {:mvn/version "0.0"}
+  lambdaisland/chui-relay {:mvn/version "0.0"}}
 
  :aliases
- {:dev
+ {:local
+  {lambdaisland/chui-core  {:local/root "modules/chui-core"}
+   lambdaisland/chui-ui    {:local/root "modules/chui-ui"}
+   lambdaisland/chui-relay {:local/root "modules/chui-relay"}}
+
+  :dev
   {:extra-paths ["dev"]
-   :extra-deps  {thheller/shadow-cljs {:mvn/version "2.8.93"}
-                 garden               {:mvn/version "1.3.9"}}}
+   :extra-deps  {thheller/shadow-cljs {:mvn/version "2.8.93"}}}
 
   :test
   {:extra-paths ["test"]
-   :extra-deps  {lambdaisland/kaocha      {:mvn/version "0.0-601"}}}
-
-  :chui-remote
-  {:extra-deps
-   {;; pohjavirta contains some java classes that need to be precompiled, so
-    ;; using it straight off git doesn't work. We'll have to either check those
-    ;; in, or put out a release
-    metosin/pohjavirta     {#_#_:git/url "https://github.com/metosin/pohjavirta"
-                            #_#_:sha     "022a44eec9109a0baf93827843eeba15265adea7"
-                            :local/root  "/home/arne/github/pohjavirta"}
-    io.pedestal/pedestal.log       {:mvn/version "0.5.2"}
-    ch.qos.logback/logback-classic {:exclusions  [org.slf4j/slf4j-api org.slf4j/slf4j-nop]
-                                    :mvn/version "1.2.3"}
-    org.clojure/core.async {:mvn/version "1.1.587"}
-    }}
-  }}
+   :extra-deps  {lambdaisland/kaocha {:mvn/version "0.0-601"}}}}}

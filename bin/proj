@@ -1,0 +1,16 @@
+#!bin/bb
+
+(ns proj
+  (:require [lioss.main :as lioss]))
+
+(lioss/main
+ {:license :epl
+  :inception-year 2020
+  :modules
+  {:chui-core {}
+   :chui-ui {}
+   :chui-relay {:release false}}})
+
+;; Local Variables:
+;; mode:clojure
+;; End:
