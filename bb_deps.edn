@@ -1,0 +1,2 @@
+{:deps
+ {lambdaisland/open-source {:local/root "../open-source"}}}
