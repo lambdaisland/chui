@@ -19,7 +19,7 @@
 
 (defn start []
   ;; for dev, enable this to update the UI on hot reload
-  ;; (ui/render! (.getElementById js/document "chui-container"))
+  (ui/render! (.getElementById js/document "chui-container"))
   (js/window.requestIdleCallback
    #(ui/run-tests)))
 

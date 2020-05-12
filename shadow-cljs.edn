@@ -7,8 +7,8 @@
  :builds
  {:kaocha
   {:target     :browser-test
-   :runner-ns  lambdaisland.chui.remote
-   ;; :runner-ns lambdaisland.chui.shadowrun
+   ;; :runner-ns  lambdaisland.chui.remote
+   :runner-ns  lambdaisland.chui.shadow.browser-runner
    :test-dir   "modules/chui-ui/resources/public"
    :asset-path "/ui"
    :ns-regexp  "-test$"
