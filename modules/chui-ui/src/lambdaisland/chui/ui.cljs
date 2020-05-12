@@ -235,10 +235,16 @@
      :on-change #(swap! ui-state assoc :only-failing? (.. % -target -checked))}]
    [:label {:for "failing-only"} "Only show failing tests"]])
 
-(defn header []
-  [:header.top-bar
-   [general-toggles]
-   [:a.name {:href "https://github.com/lambdaisland/chui"} "lambdaisland.chui"]])
+(defn header [last-run]
+  (let [sum (runner/run-summary last-run)]
+    [:header.top-bar
+     {:class (cond
+               (not last-run)      ""
+               (runner/error? sum) "error"
+               (runner/fail? sum)  "fail"
+               :else               "pass")}
+     [general-toggles]
+     [:a.name {:href "https://github.com/lambdaisland/chui"} "lambdaisland.chui"]]))
 
 (defn results []
   [:section.column
@@ -387,7 +393,7 @@
         runs? (seq runs)]
     [:div#chui
      [:style (styles/inline)]
-     [header]
+     [header (last runs)]
      [:main
       {:class (str "cols-" (col-count))}
       [test-selector]

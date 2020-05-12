@@ -66,6 +66,9 @@
                :padding ".5rem"
                :display :flex
                :justify-content :space-between}
+    [:&.error {:background-color error-color}]
+    [:&.fail {:background-color fail-color}]
+    [:&.pass {:background-color pass-color}]
     [:.button {:padding ".3rem .6rem"
                :background-color :whitesmoke
                :border-radius "2px"}]
@@ -149,8 +152,8 @@
     [:.bottom-link {:width "100%"
                     :display :block
                     :text-align :right
-                    :margin-top "1rem"}]
-    ]
+                    :margin-top "1rem"}]]
+
    [:.namespaces [:+ul {:padding-left "1.5rem"
                         :line-height "1.7rem"}]]
    [:.toggle {:position :absolute
@@ -218,23 +221,25 @@
               :grid-row-start 3}]
 
     [:progress {:grid-column "1 / span 2"
-                :background :lime
+                :background (tomorrow :gray5)
                 :width "100%"
                 :height "4px"
                 :margin-top ".5rem"
-                :margin-bottom ".5rem"}
+                :margin-bottom ".5rem"
+                :border :none
+                :-webkit-appearance :none}
      [:&.pass
-      ["&::-webkit-progress-value" {:background :lime}]
-      ["&::-webkit-progress-bar" {:background pass-color}]
-      ["&::-moz-progress-bar" {:background :purple}]]
+      ["&::-webkit-progress-value" {:background pass-color}]
+      ["&::-webkit-progress-bar" {:background (tomorrow :gray5)}]
+      ["&::-moz-progress-bar" {:background pass-color}]]
      [:&.fail
-      ["&::-webkit-progress-value" {:background :lime}]
-      ["&::-webkit-progress-bar" {:background fail-color}]
-      ["&::-moz-progress-bar" {:background :purple}]]
+      ["&::-webkit-progress-value" {:background fail-color}]
+      ["&::-webkit-progress-bar" {:background (tomorrow :gray5)}]
+      ["&::-moz-progress-bar" {:background fail-color}]]
      [:&.error
-      ["&::-webkit-progress-value" {:background :lime}]
-      ["&::-webkit-progress-bar" {:background error-color}]
-      ["&::-moz-progress-bar" {:background :purple}]]]]
+      ["&::-webkit-progress-value" {:background error-color}]
+      ["&::-webkit-progress-bar" {:background (tomorrow :gray5)}]
+      ["&::-moz-progress-bar" {:background error-color}]]]]
 
    [:.test-results {:grid-column "1 / span 2"
                     :line-height "1.6rem"
