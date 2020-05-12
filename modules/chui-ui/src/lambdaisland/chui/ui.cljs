@@ -14,7 +14,8 @@
 
 (def styles
   #_(styles/inline)
-  "body{overflow:hidden}#chui *{box-sizing:border-box}html{color:#333;font-family:sans-serif;height:100vh}body{margin:0;height:100%}#chui,#chui-container{height:100%}#chui>div,#chui-container>div{height:100%;display:grid;grid-template-rows:auto 1fr;grid-gap:.3rem}.top-bar{background-color:#4271ae;color:#7cdfff;padding:.5rem;display:flex;justify-content:space-between}.top-bar .button{padding:.3rem .6rem;background-color:whitesmoke;border-radius:2px}.top-bar .general-toggles button,.top-bar .general-toggles label{margin-right:1rem}.top-bar .general-toggles input{margin-right:.5rem}.top-bar .name{color:white;text-decoration:none;font-size:1.5rem;padding-right:.3rem}.interface-controls{display:flex}.card{border:1px solid #eee;box-shadow:1px 1px 5px #eee}.inner-card{border:1px solid #eee}ul{padding:.2rem;list-style:none;text-decoration:none;line-height:1.5}li a{text-decoration:none}code{font-size:1.1rem}main{display:flex;width:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;background-color:initial}main.cols-2>section{width:calc(100vw / 3)}main.cols-3>section{flex:1}main.cols-3>section:last-child{flex:2}main.cols-4>section{width:20vw}main.cols-4>section:last-child{width:40vw}main>section{flex-shrink:0;display:flex;flex-direction:column;padding:.5rem;overflow:auto}main>section:hover{background-color:snow}.namespaces{background-color:inherit}.fieldset{border:1px solid black;margin-top:.3rem;margin-bottom:.3rem}input[type=\"search\"]{padding:.5rem;border:0;width:100%;font-size:1.1rem;line-height:1.5}input[type=\"search\"]::placeholder{color:gray}.selection-target:hover{background-color:#ff8}.selection-target.selected{background-color:lightgoldenrodyellow}.history{background-color:inherit}.section-header{font-size:1.1rem;font-weight:bold;width:100%;margin:0}.test-info{background-color:initial;padding:.5rem 1rem 1rem;margin-bottom:1rem}.test-info .inner-card{padding:.3rem .5rem;margin:.5rem 0}.test-info .assertion{position:relative;overflow-y:auto}.test-info .context,.test-info .message{margin-bottom:.3rem}.test-info .pass{border-right:4px solid #29908a}.test-info .fail{border-right:4px solid orange}.test-info .error{border-right:4px solid crimson}.test-info aside{position:absolute;top:0;right:0;font-weight:bold;font-variant-caps:all-small-caps;padding:.2rem .5rem}.test-info h4{margin:0;font-variant-caps:all-small-caps}.test-info .bottom-link{width:100%;display:block;text-align:right;margin-top:1rem}.namespaces+ul{padding-left:1.5rem;line-height:1.7rem}.toggle{position:absolute;left:-100vw}.namespace-selector{display:flex;flex-direction:column;margin-top:.5rem;line-height:1.125}.active{font-weight:bold}.search-bar{display:grid;background-color:whitesmoke;grid-template-columns:4fr minmax(26%,1fr);grid-auto-flow:column;position:sticky;top:0}.button{font-variant-caps:all-small-caps;font-weight:bold;background-color:inherit;border:0;font-size:1.1rem}.button:hover{color:white;cursor:pointer}.run-tests{color:silver;line-height:.9}.run-tests:hover,.run-tests:active{background-color:lightgreen}.run-tests:hover:disabled{background-color:silver}.stop-tests{color:coral}.stop-tests:hover{background-color:lightcoral}.namespace-links{display:flex;flex-wrap:wrap;border-radius:2px;align-items:center;justify-content:space-between}.namespace-links *:selected{background-color:fuchsia}.namespace-links input{display:none;width:max-content}.namespace-links label{padding:.50rem .5rem}.namespace-links aside{padding:.50rem .5rem}.namespace-links aside small{font-style:italic;color:darkgray;white-space:nowrap}.namespace-links .run{margin-bottom:1rem;opacity:.7}.run.active{opacity:1}.run p{margin:0}.run .run-header{justify-content:initial;padding:.5rem 1rem;grid-column-start:1;grid-column-end:3;background-color:initial;border-radius:initial;display:grid;grid-template-columns:subgrid;color:#333}.run .run-header p{grid-column-start:1}.run .run-header small{grid-column-start:2;color:gray;text-align:right}.run footer{padding:.5rem 1rem;grid-column:1 /span 2;grid-row-start:3}.run progress{grid-column:1 / span 2;width:100%;height:4px;margin-top:.5rem;margin-bottom:.5rem}.test-results{grid-column:1 / span 2;line-height:1.6rem;text-align:justify;margin:0 1rem;overflow:hidden;font-size:50%}.test-results .ns{overflow-wrap:anywhere;box-shadow:1px 1px 4px #999}.test-results .var{border-right:1px solid #ccc}.test-results .var:last-child{border-style:none}.test-results output{display:inline-box;width:1em}.test-results output .pass{background-color:#29908a}.test-results output .fail{background-color:orange}.test-results output .error{background-color:crimson}.ns-run{padding:.5rem 1rem 1rem;margin-bottom:1rem;font-family:sans-serif}.ns-run .ns-run--header{background-color:initial;color:inherit;display:inherit;margin-bottom:.5rem}.ns-run .ns-run--header h2{font-weight:normal;margin-bottom:.2rem;font-size:1.1rem}.ns-run .ns-run--header .filename{color:darkslategray;font-size:.8rem;font-family:monospace}.ns-run>div{display:flex;flex-direction:column;gap:.5rem}.ns-run .ns-run--result{flex-grow:1;text-align:right}.ns-run .var-name-result{display:flex;flex-wrap:wrap}.ns-run .ns-run-var{padding-left:.2rem}.ns-run .ns-run-var .test-results{margin:-1px 0 0 0}.ns-run .ns-run-var header{background-color:initial;color:inherit;border-radius:unset;line-height:1.5;display:flex}.ns-run .ns-run-var header h3{font-weight:normal;font-size:1rem;padding:0 1rem 0 0}.ns-run .ns-run-var header p{padding-right:.4rem}.ns-run .ns-run-var h4{font-weight:normal;font-size:.8rem;padding-right:.2rem}.ns-run .fail{border-right:4px solid orange}.ns-run .error{border-right:4px solid crimson}.ns-run .pass{border-right:4px solid #29908a}.ns-run h2,.ns-run h3,.ns-run h4,.ns-run p{margin:0}.ns-run code{font-family:monospace;padding:.2rem}.ns-run .actual{color:red;font-weight:bold}code .class-delimiter{color:#a3685a}code .class-name{color:#a3685a}code .nil{color:#4d4d4c}code .boolean{color:#4d4d4c}code .number{color:#4271ae}code .character{color:#a3685a}code .string{color:#3e999f}code .keyword{color:#4271ae}code .symbol{color:#3e999f}code .delimiter{color:#8959a8}code .function-symbol{color:#8959a8}code .tag{color:#a3685a}code .insertion{color:#718c00}code .deletion{color:#c82829}")
+  "*{box-sizing:border-box}html{font-family:sans-serif;height:100vh}body{margin:0;height:100vh;overflow:hidden}#app{height:100vh}#chui{height:100vh;overflow:hidden}.top-bar{margin:.2rem;display:flex;justify-content:space-between;align-items:center}.button{border:0}.button:hover{cursor:pointer}.general-toggles{display:flex;align-items:center}.general-toggles input,.general-toggles label{margin-right:.5rem;vertical-align:text-bottom}.clear{margin-right:.5rem;padding:.5rem}.name{text-decoration:none;padding-right:.3rem}.card{background-color:#f5f7fa;border:1px solid #d4dde9;margin-bottom:.2rem}.inner-card{background-color:white;border:1px solid #d4dde9}main{display:flex;padding-left:.2rem;height:100%;overflow:hidden;gap:.2rem}section{flex:1}.column{height:100%;overflow:scroll}.last-column{flex:2;overflow-y:scroll}.fieldset{border:1px solid black;margin-top:.3rem;margin-bottom:.3rem}input[type=\"search\"]{padding:.5rem;border:0;width:100%;line-height:1.5}.selection-target:hover{background-color:white}.selection-target.selected{background-color:white}.section-header{font-weight:normal;font-size:1.1rem;margin:0}.test-info{padding:.5rem .2rem;margin-bottom:.2rem}.test-info .inner-card{padding:.3rem .2rem;margin:.2rem 0}.test-info .assertion{position:relative;overflow-y:auto}.test-info .context,.test-info .message{margin-bottom:.2rem}.test-info .pass{border-right:4px solid #ccc}.test-info .fail{border-right:4px solid #eeea0b}.test-info .error{border-right:4px solid crimson}.test-info aside{position:absolute;top:0;right:0;font-variant-caps:all-small-caps;padding:.2rem .2rem}.test-info h4{margin:0;font-weight:normal;font-variant-caps:all-small-caps}.test-info .bottom-link{text-decoration:none}.namespaces+ul{padding-left:1.5rem;line-height:1.7rem}.toggle{position:absolute;left:-100vw}.namespace-selector{display:flex;flex-direction:column;margin-top:.5rem}.search-bar{display:grid;grid-template-columns:4fr minmax(26%,1fr);grid-auto-flow:column;position:sticky;top:0}.run-tests{line-height:.9}.namespace-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;line-height:1.5}.namespace-links input{display:none;width:max-content}.namespace-link{display:inline-flex;width:100%;justify-content:space-between;flex-wrap:wrap;align-items:baseline}.namespace-link small{color:gray}.run{opacity:.5}.run.active{opacity:1;background-color:white;border:1px solid darkgray}.run output{margin-bottom:.2rem}.run:hover{opacity:1}.run p{margin:0}.run footer{padding:.5rem .2rem;grid-column:1 /span 2;grid-row-start:3}.run .test-results{margin:0 .2rem}.progress{grid-column:1 / span 2;background:whitesmoke;width:100%;height:1rem;margin-top:.5rem;margin-bottom:.5rem;border:0}.run-header{padding:.5rem .2rem}.run-header p{grid-column-start:1}.run-header small{grid-column-start:2;text-align:right}.test-results{background-color:white}.test-results .ns{overflow-wrap:anywhere}.test-results .var{margin-right:.2rem;line-height:1.5;margin-bottom:.2rem}.test-results .var:last-child{border-style:none}.test-results output{display:inline-block}.test-results output .pass{background-color:#ccc}.test-results output .fail{background-color:#eeea0b}.test-results output .error{background-color:crimson}.ns-run{padding:.5rem .2rem .5rem;margin-bottom:.2rem;font-family:sans-serif}.ns-run .ns-run--header{display:inherit;margin-bottom:.5rem}.ns-run .ns-run--header h2{font-weight:normal;font-size:1rem;margin-bottom:.2rem}.ns-run .ns-run--header .filename{font-family:monospace;font-size:.8rem}.ns-run>div{display:flex;flex-direction:column;gap:.2rem}.ns-run .ns-run--result{flex-grow:1;text-align:right}.ns-run .var-name-result{display:flex;flex-wrap:wrap}.ns-run .ns-run-var{padding-left:.2rem}.ns-run .ns-run-var header{border-radius:unset;line-height:1.5;display:flex}.ns-run .ns-run-var header h3{font-weight:normal;font-size:1rem;padding:0 1rem 0 0}.ns-run .ns-run-var header p{padding-right:.4rem}.ns-run .ns-run-var h4{font-weight:normal;padding-right:.2rem}.ns-run h2,.ns-run h3,.ns-run h4,.ns-run p{margin:0}.ns-run code{font-family:monospace;padding:.2rem}code .class-delimiter{color:#a3685a}code .class-name{color:#a3685a}code .nil{color:#4d4d4c}code .boolean{color:#4d4d4c}code .number{color:#4271ae}code .character{color:#a3685a}code .string{color:#3e999f}code .keyword{color:#4271ae}code .symbol{color:#3e999f}code .delimiter{color:#8959a8}code .function-symbol{color:#8959a8}code .tag{color:#a3685a}code .insertion{color:#718c00}code .deletion{color:#c82829}"
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; State
@@ -225,7 +226,7 @@
 
 (defn general-toggles []
   [:div.general-toggles
-   [:button.button {:on-click #(swap! runner/state assoc :runs [])} "Clear results"]
+   [:button.button.clear {:on-click #(swap! runner/state assoc :runs [])} "Clear results"]
    [:input#regexp
     {:type "checkbox"
      :on-change (fn [e]
@@ -253,34 +254,34 @@
 
 (defn history [runs]
   [:section.column.history
-   [:div.option
-    (let [{:keys [selected]} @runner-state
-          {:keys [only-failing?]} @ui-state
-          selected-run (selected-run)]
-      (for [{:keys [id nss start done? terminated?] :as run} (reverse runs)
-            :let [selected? (= id (:id selected-run))
-                  active? (and (not selected-run) (= id (:id (last runs))))]]
-        (let [sum (runner/run-summary run)]
-          ^{:key id}
-          [:article.run.selection-target.card
-           {:class (cond
-                     selected? "selected active"
-                     active? "active")
-            :on-click (fn [_]
-                        (swap! ui-state
-                               (fn [s]
-                                 (assoc s :selected-run run))))}
-           [:header.run-header
-            [:progress {:max (:test-count run) :value (:tests (runner/run-summary run))}]
-            [:p (reltime-str start)]
-            [:small
-             (when-not done? "Running")
-             (when terminated? "Aborted")]]
-           [result-viz (if only-failing?
-                         (filter #(runner/fail? (runner/ns-summary %)) nss)
-                         nss) selected]
-           [:footer
-            [:p [summary sum]]]])))]])
+   (let [{:keys [selected]} @runner-state
+         {:keys [only-failing?]} @ui-state
+         selected-run (selected-run)]
+     (for [{:keys [id nss start done? terminated?] :as run} (reverse runs)
+           :let [selected? (= id (:id selected-run))
+                 active? (and (not selected-run) (= id (:id (last runs))))]]
+       (let [sum (runner/run-summary run)]
+         ^{:key id}
+         [:article.run.selection-target.card
+          {:class (cond
+                    selected? "selected active"
+                    active? "active")
+           :on-click (fn [_]
+                       (swap! ui-state
+                              (fn [s]
+                                (assoc s :selected-run run))))}
+          [:header.run-header
+           [:progress.progress {:max (:test-count run)
+                                :value (:tests (runner/run-summary run))}]
+           [:p (reltime-str start)]
+           [:small
+            (when-not done? "Running")
+            (when terminated? "Aborted")]]
+          [result-viz (if only-failing?
+                        (filter #(runner/fail? (runner/ns-summary %)) nss)
+                        nss) selected]
+          [:footer
+           [:p [summary sum]]]])))])
 
 (defn- filter'n-run []
   (let [{:keys [query]} @ui-state]
@@ -301,7 +302,7 @@
                      _ (add-watch test-data/test-ns-data ::rerender #(reagent/force-update this))]
     (let [{:keys [selected]} @runner-state
           {:keys [query]} @ui-state]
-      [:section.column-namespaces
+      [:section.column.namespaces
        [filter'n-run]
        [:div.namespace-selector
         (for [{tests :tests
@@ -319,9 +320,8 @@
              :type "checkbox"
              :on-click #(when (str/blank? query)
                           (toggle-ns-select ns-sym (.. % -target -checked)))}]
-           [:label {:for ns-str}
-            [:span ns-str]]
-           [:aside
+           [:label.namespace-link {:for ns-str}
+            [:span ns-str]
             [:small test-count (if (= 1 test-count)
                                  " test"
                                  " tests")]]])]])))
@@ -345,7 +345,7 @@
           [:div :view-stacktrace
            (str "For stacktrace: See error number " error-number " in console")]))]])
 
-(defn test-assertions [{var-name :name :keys [assertions] :as var-info}]
+(defn test-assertions [{var-name :name :keys [assertions]}]
   (reagent/with-let [pass? (comp #{:pass} :type)
                      show-passing? (reagent/atom false)]
     [:div.test-info.card
@@ -365,7 +365,7 @@
           "Show " pass-count " passing assertions"]))]))
 
 (defn assertion-details []
-  [:section.column
+  [:section.column.last-column
    (if-let [tests (seq (selected-tests))]
      (map (fn [test]
             ^{:key (:name test)}
@@ -382,13 +382,12 @@
       2)))
 
 (defn app []
-  (let [{:keys [selected runs]} @runner-state
+  (let [{:keys [runs]} @runner-state
         runs? (seq runs)]
     [:div#chui
      [:style styles]
      [header]
      [:main
-      {:class (str "cols-" (col-count))}
       [test-selector]
       [history runs]
       (when runs?
