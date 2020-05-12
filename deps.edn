@@ -6,7 +6,7 @@
 
   lambdaisland/chui-core   {:local/root "modules/chui-core"}
   lambdaisland/chui-ui     {:local/root "modules/chui-ui"}
-  #_#_lambdaisland/chui-relay  {:local/root "modules/chui-relay"}
+  lambdaisland/chui-relay  {:local/root "modules/chui-relay"}
   lambdaisland/chui-shadow {:local/root "modules/chui-shadow"}}
 
  :aliases

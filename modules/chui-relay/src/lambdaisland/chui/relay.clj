@@ -1,4 +1,4 @@
-(ns lambdaisland.chui.bridge
+(ns lambdaisland.chui.relay
   (:require [cognitect.transit :as transit]
             [pohjavirta.websocket :as ws]
             [pohjavirta.server :as server]
@@ -113,8 +113,8 @@
          (remove existing-ids)
          first)))
 
-(defmethod handle-message :kaocha.chui.client/connected [{:keys [client-info]} client]
-  (log/trace :kaocha.chui.client/connected client-info)
+(defmethod handle-message :connected [{:keys [client-info]} client]
+  (log/trace :connected client-info)
   (let [client (merge client client-info)
         client (if-not (and (:mult client) (:chan client))
                  (let [chan (async/chan 8)
@@ -180,7 +180,7 @@
     stop?))
 
 (defn start! [opts]
-  (log/config :pohjavirta/config opts)
+  (log/info :pohjavirta/config opts)
   (when-not (running?)
     (let [server (server/create (handler))]
       (swap! server-state
@@ -192,7 +192,7 @@
       (server/start server))))
 
 (defn stop! []
-  (log/config :stopping-server {})
+  (log/info :stopping-server {})
   (swap! server-state
          (fn [{:keys [running? undertow stop-keepalive] :as state}]
            (deliver stop-keepalive true)

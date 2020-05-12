@@ -1,4 +1,4 @@
-{:paths ["src"]
+{:paths ["src" "resources"]
  :deps
  {;; pohjavirta contains some java classes that need to be precompiled, so
   ;; using it straight off git doesn't work. We'll have to either check those
@@ -10,5 +10,4 @@
   ch.qos.logback/logback-classic {:exclusions  [org.slf4j/slf4j-api org.slf4j/slf4j-nop]
                                   :mvn/version "1.2.3"}
   org.clojure/core.async         {:mvn/version "1.1.587"}
-  }
- }
+  com.cognitect/transit-cljs     {:mvn/version "0.8.264"}}}

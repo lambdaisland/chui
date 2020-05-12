@@ -4,24 +4,23 @@
             [clojure.browser.repl :as browser-repl]
             [clojure.string :as str]
             [goog.dom :as gdom]
-            [goog.log :as glog]
             [goog.object :as gobj]
-            ;; fixme
-            [kaocha.cljs.cognitect.transit :as transit]
-            [kaocha.cljs.websocket :as ws]
+            [cognitect.transit :as transit]
+            [lambdaisland.chui.websocket :as ws]
             [lambdaisland.chui.ui :as ui]
             [lambdaisland.chui.interceptor :as intor]
             [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.test-data :as test-data]
             [lambdaisland.glogi :as log]
-            [pjstadig.print :as humane-print]
+            [lambdaisland.glogi.console :as glogi-console]
             [platform :as platform]
             [goog.dom :as gdom]
             [kitchen-async.promise :as p])
-  (:import [goog.string StringBuffer])
-  (:require-macros [kaocha.cljs.hierarchy :as hierarchy]))
+  (:import [goog.string StringBuffer]))
 
 (log/set-levels '{:glogi/root :debug})
+
+(glogi-console/install!)
 
 (def socket nil)
 
@@ -100,6 +99,8 @@
                                         :client-id client-id
                                         :agent-id agent-id)))))
 
+;; TODO: replace with deep-diff
+#_
 (defn pretty-print-failure [m]
   (let [buffer (StringBuffer.)]
     (binding [humane-print/*sb* buffer
@@ -136,6 +137,8 @@
      (cljs-test-msg
       (case (:type m)
         :fail
+        m
+        #_
         (assoc m :kaocha.report/printed-expression
                (pretty-print-failure m))
         :error
@@ -227,7 +230,7 @@
                      {:open
                       (fn [e]
                         (log/trace :ws-open (into {} (map (juxt keyword #(gobj/get e %))) (js/Object.keys e)))
-                        (send! {:type ::connected
+                        (send! {:type :connected
                                 :client-info
                                 {:has-dom?  (exists? js/document)
                                  :agent-id  agent-id

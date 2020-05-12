@@ -7,9 +7,9 @@
  :builds
  {:kaocha
   {:target     :browser-test
-   :runner-ns  kaocha.chui.client
+   :runner-ns  lambdaisland.chui.remote
    ;; :runner-ns lambdaisland.chui.shadowrun
-   :test-dir   "resources/public"
+   :test-dir   "modules/chui-ui/resources/public"
    :asset-path "/ui"
    :ns-regexp  "-test$"
    :devtools   {:repl-pprint true}}}

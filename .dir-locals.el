@@ -1,4 +1,4 @@
-((nil . ((cider-clojure-cli-global-options     . "-A:dev:test:kaocha-chui")
+((nil . ((cider-clojure-cli-global-options     . "-A:dev:test")
          (cider-custom-cljs-repl-init-form     . "(user/cljs-repl)")
          (cider-default-cljs-repl              . custom)
          (cider-preferred-build-tool           . clojure-cli)
