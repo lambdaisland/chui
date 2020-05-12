@@ -62,23 +62,26 @@
                :grid-template-rows "auto 1fr"
                :grid-gap ".3rem"}]]]
    [:.top-bar {:background-color (:blue tomorrow)
-               :color "#7cdfff"
+               :color :white
                :padding ".5rem"
                :display :flex
-               :justify-content :space-between}
+               :justify-content :space-between
+               :align-items :center}
     [:&.error {:background-color error-color}]
-    [:&.fail {:background-color fail-color}]
+    [:&.fail {:background-color fail-color
+              :color :black}]
     [:&.pass {:background-color pass-color}]
     [:.button {:padding ".3rem .6rem"
                :background-color :whitesmoke
                :border-radius "2px"}]
-    [:.general-toggles
+    [:.general-toggles {:display :flex
+                        :align-items :center}
      [:button :label {:margin-right "1rem"}]
      [:input {:margin-right ".5rem"}]]
-    [:.name {:color :white
+    [:.name {:color :inherit
              :text-decoration :none
-             :font-size "1.5rem"
-             :padding-right ".3rem"}]]
+             :font-size "1rem"
+             :font-weight :bold}]]
    [:.interface-controls {:display :flex}]
    [:.card {:border "1px solid #eee"
             :box-shadow "1px 1px 5px #eee"}]
