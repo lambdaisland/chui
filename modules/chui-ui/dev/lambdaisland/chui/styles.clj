@@ -1,7 +1,7 @@
 (ns lambdaisland.chui.styles
   (:require [garden.core :as garden]
             [garden.stylesheet :as stylesheet]
-            [garden.selectors :as s]
+            [garden.selectors :as selectors]
             [garden.color :as color]))
 
 (def fail-color  "#eeea0b")
@@ -29,7 +29,7 @@
 
 (selectors/defselector input)
 
-(def search-input (partial input (s/attr= "type" "search")))
+(def search-input (partial input (selectors/attr= "type" "search")))
 
 (def puget-color-styles
   [[:code
@@ -62,7 +62,8 @@
            :height "100vh"
            :overflow :hidden}]
 
-   [:#app {:height "100vh"}]
+   [:#chui-container
+    {:height "100vh"}]
 
    [:#chui {:height "100vh"
             :overflow :hidden}]

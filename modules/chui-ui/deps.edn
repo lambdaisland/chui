@@ -5,4 +5,5 @@
          lambdaisland/chui-core    {:local/root "../chui-core"}}
 
  :aliases
- {:dev {:extra-deps {garden {:mvn/version "1.3.9"}}}}}
+ {:release
+  {:extra-paths ["release"]}}}

@@ -18,7 +18,7 @@
 
 (defn start []
   ;; for dev, enable this to update the UI on hot reload
-  (ui/render! (.getElementById js/document "app"))
+  ;; (ui/render! (.getElementById js/document "chui-container"))
   (js/window.requestIdleCallback
    #(ui/run-tests)))
 
@@ -26,8 +26,7 @@
   (runner/terminate! done))
 
 (defn ^:export init []
-  ;; (let [app (gdom/createElement "div")]
-  ;;   (gdom/setProperties app #js {:id "chui-container"})
-  ;;   (gdom/append js/document.body app))
-  (ui/render! (.getElementById js/document "app"))
+  (let [app (gdom/createElement "div")]
+    (gdom/setProperties app #js {:id "chui-container"})
+    (gdom/append js/document.body app))
   (start))
