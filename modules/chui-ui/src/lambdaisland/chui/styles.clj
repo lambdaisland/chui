@@ -68,8 +68,7 @@
                :justify-content :space-between}
     [:.button {:padding ".3rem .6rem"
                :background-color :whitesmoke
-               :border-radius "2px"
-               }]
+               :border-radius "2px"}]
     [:.general-toggles
      [:button :label {:margin-right "1rem"}]
      [:input {:margin-right ".5rem"}]]
@@ -217,11 +216,26 @@
     [:footer {:padding ".5rem 1rem"
               :grid-column "1 /span 2"
               :grid-row-start 3}]
+
     [:progress {:grid-column "1 / span 2"
+                :background :lime
                 :width "100%"
                 :height "4px"
                 :margin-top ".5rem"
-                :margin-bottom ".5rem"}]]
+                :margin-bottom ".5rem"}
+     [:&.pass
+      ["&::-webkit-progress-value" {:background :lime}]
+      ["&::-webkit-progress-bar" {:background pass-color}]
+      ["&::-moz-progress-bar" {:background :purple}]]
+     [:&.fail
+      ["&::-webkit-progress-value" {:background :lime}]
+      ["&::-webkit-progress-bar" {:background fail-color}]
+      ["&::-moz-progress-bar" {:background :purple}]]
+     [:&.error
+      ["&::-webkit-progress-value" {:background :lime}]
+      ["&::-webkit-progress-bar" {:background error-color}]
+      ["&::-moz-progress-bar" {:background :purple}]]]]
+
    [:.test-results {:grid-column "1 / span 2"
                     :line-height "1.6rem"
                     :text-align :justify

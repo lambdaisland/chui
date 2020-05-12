@@ -267,7 +267,12 @@
                                (fn [s]
                                  (assoc s :selected-run run))))}
            [:header.run-header
-            [:progress {:max (:test-count run) :value (:tests (runner/run-summary run))}]
+            [:progress {:class (cond
+                                 (runner/error? sum) "error"
+                                 (runner/fail? sum)  "fail"
+                                 :else               "pass")
+                        :max (:test-count run)
+                        :value (:tests (runner/run-summary run))}]
             [:p (reltime-str start)]
             [:small
              (when-not done? "Running")
