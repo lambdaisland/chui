@@ -1,10 +1,9 @@
 # Unreleased
 
-## Added
-
-## Fixed
-
 ## Changed
+
+- Don't call capture-test-data at the top level, this may fix issues when our
+  code is included in a doo project
 
 # 0.0.91 (2020-05-12 / 0a80a97)
 
