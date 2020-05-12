@@ -243,19 +243,14 @@
       ["&::-webkit-progress-bar" {:background (tomorrow :gray5)}]
       ["&::-moz-progress-bar" {:background error-color}]]]]
 
-   [:.test-results {:grid-column "1 / span 2"
-                    :line-height "1.6rem"
+   [:.test-results {:line-height "1.6rem"
                     :text-align :justify
                     :margin "0 1rem"
-                    :overflow :hidden
-                    :font-size "50%"}
-    [:.ns {;;:border "1px solid darkslategray"
-           :overflow-wrap :anywhere
-           :box-shadow "1px 1px 4px #999"}]
-    [:.var {:border-right (str "1px solid #ccc")}
+                    :overflow :hidden}
+    [:.ns {:overflow-wrap :anywhere}]
+    [:.var {:margin-right "2px"}
      [:&:last-child {:border-style :none}]]
-    [:output {:display :inline-box
-              :width "1em"}
+    [:output {:display :inline-flex}
      [:.pass {:background-color pass-color}]
      [:.fail {:background-color fail-color}]
      [:.error {:background-color error-color}]]]
@@ -282,7 +277,7 @@
                         :flex-wrap :wrap}]
     [:.ns-run-var
      {:padding-left ".2rem"}
-     [:.test-results {:margin "-1px 0 0 0"}]
+     [:.test-results {:margin 0}]
      [:header
       {:background-color :initial
        :color :inherit
@@ -296,9 +291,18 @@
      [:h4 {:font-weight :normal
            :font-size ".8rem"
            :padding-right ".2rem"}]]
-    [:.fail {:border-right (str "4px solid "  fail-color)}]
-    [:.error {:border-right (str "4px solid " error-color)}]
-    [:.pass {:border-right (str "4px solid "  pass-color)}]
+    [:.ns-fail {:border-right (str "4px solid "  fail-color)
+                :border-top 0
+                :border-bottom 0
+                :border-left 0}]
+    [:.ns-error {:border-right (str "4px solid " error-color)
+                 :border-left 0
+                 :border-top 0
+                 :border-bottom 0}]
+    [:.ns-pass {:border-right (str "4px solid "  pass-color)
+                :border-left 0
+                :border-top 0
+                :border-bottom 0}]
     [:h2 :h3 :h4 :p {:margin 0}]
     [:code {:font-family :monospace
             :padding ".2rem"}]
