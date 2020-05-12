@@ -3,6 +3,7 @@
 ## Changed
 
 - Improve release process
+- Colorize progress bar / top bar based on run result
 
 # 0.0.73 (2020-05-11 / a151fae)
 
