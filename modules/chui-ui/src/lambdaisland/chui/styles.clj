@@ -225,7 +225,7 @@
     [:progress {:grid-column "1 / span 2"
                 :background (tomorrow :gray5)
                 :width "100%"
-                :height "4px"
+                :height "1rem"
                 :margin-top ".5rem"
                 :margin-bottom ".5rem"
                 :border :none
