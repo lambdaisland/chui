@@ -3,8 +3,7 @@
 
   Not a 1989 fantasy tabletop game."
   {:dev/always true}
-  (:require [goog.dom :as gdom]
-            [lambdaisland.chui.runner :as runner]
+  (:require [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.ui :as ui]
             [lambdaisland.chui.test-data :as test-data]
             [lambdaisland.glogi :as log]
@@ -21,7 +20,7 @@
 
 (defn start []
   ;; for dev, enable this to update the UI on hot reload
-  #_(ui/render! (.getElementById js/document "chui-container"))
+  (ui/render! (.getElementById js/document "app"))
   (js/window.requestIdleCallback
    #(ui/run-tests)))
 
@@ -29,8 +28,8 @@
   (runner/terminate! done))
 
 (defn ^:export init []
-  (let [app (gdom/createElement "div")]
-    (gdom/setProperties app #js {:id "chui-container"})
-    (gdom/append js/document.body app))
-  (ui/render! (.getElementById js/document "chui-container"))
+  ;; (let [app (gdom/createElement "div")]
+  ;;   (gdom/setProperties app #js {:id "chui-container"})
+  ;;   (gdom/append js/document.body app))
+  (ui/render! (.getElementById js/document "app"))
   (start))
