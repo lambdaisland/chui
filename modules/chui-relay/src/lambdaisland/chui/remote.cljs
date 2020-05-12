@@ -5,7 +5,7 @@
             [clojure.string :as str]
             [goog.dom :as gdom]
             [goog.object :as gobj]
-            [cognitect.transit :as transit]
+            [lambdaisland.chui.transit :as transit]
             [lambdaisland.chui.websocket :as ws]
             [lambdaisland.chui.ui :as ui]
             [lambdaisland.chui.interceptor :as intor]
@@ -215,7 +215,9 @@
   (map #(dissoc % :test :var :ns) vars-data))
 
 (defn scrub-test-data [test-data]
-  (map (comp #(update % :tests scrub-var-data) val)
+  (map (comp #(-> %
+                  (dissoc :once-fixtures :each-fixtures)
+                  (update :tests scrub-var-data)) val)
        test-data))
 
 (defmethod handle-message :fetch-test-data [msg]
