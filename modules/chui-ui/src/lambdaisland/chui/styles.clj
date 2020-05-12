@@ -3,9 +3,9 @@
             [garden.stylesheet :as stylesheet]
             [garden.selectors :as selectors]))
 
-(def fail-color  "orange")
-(def error-color "crimson")
-(def pass-color  "#29908a")
+(def fail-color  "#f6d55c")
+(def error-color "#ed553b")
+(def pass-color  "#3caea3")
 
 ;; https://github.com/chriskempson/base16-tomorrow-scheme/blob/master/tomorrow.yaml
 (def tomorrow
@@ -124,9 +124,8 @@
      :line-height 1.5}]
    [(search-input "::placeholder") {:color :gray}]
 
-   [:.selection-target
-    [:&:hover {:background-color "#ff8"}]
-    [:&.selected {:background-color "lightgoldenrodyellow"}]]
+   [:.selection-target {:background-color :white}
+    [:&.selected {:background-color "#eee"}]]
    [:.history { :background-color :inherit}]
    [:.section-header {:font-size "1.1rem"
                       :font-weight "bold"
@@ -181,7 +180,8 @@
                :cursor :pointer}]]
    [:.run-tests {:color :silver
                  :line-height ".9"}
-    [:&:hover :&:active {:background-color :lightgreen}]
+    [:&:hover :&:active {:background-color :lightgreen
+                         :color :darkslategray}]
     [:&:hover:disabled {:background-color :silver}]]
    [:.stop-tests {:color :coral}
     [:&:hover {:background-color :lightcoral}]]
@@ -191,8 +191,6 @@
      :border-radius "2px"
      :align-items :center
      :justify-content :space-between}
-    [:* {}
-     [:&:selected {:background-color :fuchsia}]]
     [:input {:display :none
              :width :max-content}]
     [:label {:padding ".50rem .5rem"}]
@@ -203,8 +201,9 @@
 
    [:.run
     {:margin-bottom "1rem"
-     :opacity 0.7}
+     :opacity 0.5}
     [:&.active {:opacity 1}]
+    [:&:hover {:opacity 1}]
     [:p {:margin 0}]
     [:.run-header {:padding ".5rem 1rem"
                    :grid-column-start 1
