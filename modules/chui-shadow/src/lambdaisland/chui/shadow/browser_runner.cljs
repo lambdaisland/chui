@@ -1,7 +1,8 @@
 (ns lambdaisland.chui.shadow.browser-runner
   "Runner namespace to be used with shadow-cljs's :browser-test target."
   {:dev/always true}
-  (:require [lambdaisland.chui.runner :as runner]
+  (:require [goog.dom :as gdom]
+            [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.ui :as ui]
             [lambdaisland.chui.test-data :as test-data]
             [lambdaisland.glogi :as log]
@@ -28,5 +29,6 @@
 (defn ^:export init []
   (let [app (gdom/createElement "div")]
     (gdom/setProperties app #js {:id "chui-container"})
-    (gdom/append js/document.body app))
+    (gdom/append js/document.body app)
+    (ui/render! app))
   (start))
