@@ -5,5 +5,5 @@
          lambdaisland/chui-core    {:local/root "../chui-core"}}
 
  :aliases
- {:release
+ {:lioss/release
   {:extra-paths ["release"]}}}
