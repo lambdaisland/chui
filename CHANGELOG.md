@@ -4,6 +4,7 @@
 
 - Don't wait on next tick in between interceptor steps, so as not to unduly slow
   things down
+- UI improvements
 
 # 0.0.94 (2020-05-12 / e9fc96b)
 
