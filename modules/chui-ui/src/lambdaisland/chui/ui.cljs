@@ -191,9 +191,9 @@
            {:class (str/join " "
                              [(when selected? "selected")
                               (cond
-                                error? "error"
-                                fail?  "fail"
-                                :else  "pass")])
+                                error? "ns-error"
+                                fail?  "ns-fail"
+                                :else  "ns-pass")])
             :on-click #(swap! ui-state
                               (fn [s]
                                 (assoc s :selected-tests
@@ -287,7 +287,7 @@
                          (filter #(runner/fail? (runner/ns-summary %)) nss)
                          nss) selected]
            [:footer
-            [:p [summary sum]]]])))]])
+            [:small [summary sum]]]])))]])
 
 (defn- filter'n-run []
   (let [{:keys [query]} @ui-state]

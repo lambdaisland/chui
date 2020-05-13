@@ -3,9 +3,9 @@
             [garden.stylesheet :as stylesheet]
             [garden.selectors :as selectors]))
 
-(def fail-color  "orange")
-(def error-color "crimson")
-(def pass-color  "#29908a")
+(def fail-color  "#f6d55c")
+(def error-color "#ed553b")
+(def pass-color  "#3caea3")
 
 ;; https://github.com/chriskempson/base16-tomorrow-scheme/blob/master/tomorrow.yaml
 (def tomorrow
@@ -62,23 +62,26 @@
                :grid-template-rows "auto 1fr"
                :grid-gap ".3rem"}]]]
    [:.top-bar {:background-color (:blue tomorrow)
-               :color "#7cdfff"
+               :color :white
                :padding ".5rem"
                :display :flex
-               :justify-content :space-between}
+               :justify-content :space-between
+               :align-items :center}
     [:&.error {:background-color error-color}]
-    [:&.fail {:background-color fail-color}]
+    [:&.fail {:background-color fail-color
+              :color :black}]
     [:&.pass {:background-color pass-color}]
     [:.button {:padding ".3rem .6rem"
                :background-color :whitesmoke
                :border-radius "2px"}]
-    [:.general-toggles
+    [:.general-toggles {:display :flex
+                        :align-items :center}
      [:button :label {:margin-right "1rem"}]
      [:input {:margin-right ".5rem"}]]
-    [:.name {:color :white
+    [:.name {:color :inherit
              :text-decoration :none
-             :font-size "1.5rem"
-             :padding-right ".3rem"}]]
+             :font-size "1rem"
+             :font-weight :bold}]]
    [:.interface-controls {:display :flex}]
    [:.card {:border "1px solid #eee"
             :box-shadow "1px 1px 5px #eee"}]
@@ -121,9 +124,8 @@
      :line-height 1.5}]
    [(search-input "::placeholder") {:color :gray}]
 
-   [:.selection-target
-    [:&:hover {:background-color "#ff8"}]
-    [:&.selected {:background-color "lightgoldenrodyellow"}]]
+   [:.selection-target {:background-color :white}
+    [:&.selected {:background-color "#eee"}]]
    [:.history { :background-color :inherit}]
    [:.section-header {:font-size "1.1rem"
                       :font-weight "bold"
@@ -178,7 +180,8 @@
                :cursor :pointer}]]
    [:.run-tests {:color :silver
                  :line-height ".9"}
-    [:&:hover :&:active {:background-color :lightgreen}]
+    [:&:hover :&:active {:background-color :lightgreen
+                         :color :darkslategray}]
     [:&:hover:disabled {:background-color :silver}]]
    [:.stop-tests {:color :coral}
     [:&:hover {:background-color :lightcoral}]]
@@ -188,8 +191,6 @@
      :border-radius "2px"
      :align-items :center
      :justify-content :space-between}
-    [:* {}
-     [:&:selected {:background-color :fuchsia}]]
     [:input {:display :none
              :width :max-content}]
     [:label {:padding ".50rem .5rem"}]
@@ -200,8 +201,9 @@
 
    [:.run
     {:margin-bottom "1rem"
-     :opacity 0.7}
+     :opacity 0.5}
     [:&.active {:opacity 1}]
+    [:&:hover {:opacity 1}]
     [:p {:margin 0}]
     [:.run-header {:padding ".5rem 1rem"
                    :grid-column-start 1
@@ -223,7 +225,7 @@
     [:progress {:grid-column "1 / span 2"
                 :background (tomorrow :gray5)
                 :width "100%"
-                :height "4px"
+                :height "1rem"
                 :margin-top ".5rem"
                 :margin-bottom ".5rem"
                 :border :none
@@ -241,19 +243,14 @@
       ["&::-webkit-progress-bar" {:background (tomorrow :gray5)}]
       ["&::-moz-progress-bar" {:background error-color}]]]]
 
-   [:.test-results {:grid-column "1 / span 2"
-                    :line-height "1.6rem"
+   [:.test-results {:line-height "1.6rem"
                     :text-align :justify
                     :margin "0 1rem"
-                    :overflow :hidden
-                    :font-size "50%"}
-    [:.ns {;;:border "1px solid darkslategray"
-           :overflow-wrap :anywhere
-           :box-shadow "1px 1px 4px #999"}]
-    [:.var {:border-right (str "1px solid #ccc")}
+                    :overflow :hidden}
+    [:.ns {:overflow-wrap :anywhere}]
+    [:.var {:margin-right "2px"}
      [:&:last-child {:border-style :none}]]
-    [:output {:display :inline-box
-              :width "1em"}
+    [:output {:display :inline-flex}
      [:.pass {:background-color pass-color}]
      [:.fail {:background-color fail-color}]
      [:.error {:background-color error-color}]]]
@@ -280,7 +277,7 @@
                         :flex-wrap :wrap}]
     [:.ns-run-var
      {:padding-left ".2rem"}
-     [:.test-results {:margin "-1px 0 0 0"}]
+     [:.test-results {:margin 0}]
      [:header
       {:background-color :initial
        :color :inherit
@@ -294,9 +291,18 @@
      [:h4 {:font-weight :normal
            :font-size ".8rem"
            :padding-right ".2rem"}]]
-    [:.fail {:border-right (str "4px solid "  fail-color)}]
-    [:.error {:border-right (str "4px solid " error-color)}]
-    [:.pass {:border-right (str "4px solid "  pass-color)}]
+    [:.ns-fail {:border-right (str "4px solid "  fail-color)
+                :border-top 0
+                :border-bottom 0
+                :border-left 0}]
+    [:.ns-error {:border-right (str "4px solid " error-color)
+                 :border-left 0
+                 :border-top 0
+                 :border-bottom 0}]
+    [:.ns-pass {:border-right (str "4px solid "  pass-color)
+                :border-left 0
+                :border-top 0
+                :border-bottom 0}]
     [:h2 :h3 :h4 :p {:margin 0}]
     [:code {:font-family :monospace
             :padding ".2rem"}]
