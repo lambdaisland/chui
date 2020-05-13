@@ -49,13 +49,13 @@ technical background.
 deps.edn
 
 ``` clojure
-lambdaisland/chui {:mvn/version "0.0.94"}
+lambdaisland/chui {:mvn/version "0.0.103"}
 ```
 
 project.clj
 
 ``` clojure
-[lambdaisland/chui "0.0.94"]
+[lambdaisland/chui "0.0.103"]
 ```
 
 
