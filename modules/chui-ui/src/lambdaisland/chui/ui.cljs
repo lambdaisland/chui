@@ -183,7 +183,7 @@
         [:h2 (str ns)]
         [:small.filename (:file (:meta (first vars)))]]
        [:div
-        (for [{var-name :name :keys [assertions] :as var-info} vars
+        (for [{var-name :name :keys [assertions] :as var-info} (sort-by (comp :line :meta) vars)
               :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
               :let [selected? (some (comp #{var-name} :name) selected-tests)
                     sum (runner/var-summary var-info)
@@ -199,10 +199,7 @@
                                 :else  "ns-pass")])
             :on-click #(swap! ui-state
                               (fn [s]
-                                (assoc s :selected-tests
-                                       (if selected?
-                                         (remove #{var-name} (map :name selected-tests))
-                                         #{var-name}))))}
+                                (assoc s :selected-tests #{var-name})))}
            [:header.result-var-card
             [:div.var-name-result
              [:h3.ns-run--assertion (name var-name)]
@@ -252,7 +249,7 @@
 (defn results []
   [:section.column
    [:div.results
-    (for [ns (:nss (selected-run))]
+    (for [ns (sort-by :ns (:nss (selected-run)))]
       ^{:key (:ns ns)}
       [run-results ns])]])
 
@@ -371,11 +368,11 @@
 
 (defn assertion-details []
   [:section.column
-   (if-let [tests (seq (selected-tests))]
+   (if-let [tests (sort-by (juxt :ns (comp :line :meta)) (selected-tests))]
      (map (fn [test]
             ^{:key (:name test)}
             [test-assertions test])
-          tests) ; Felipe fix me :)
+          tests)
      [:p "All tests pass!"])])
 
 (defn col-count []
@@ -405,7 +402,7 @@
   (let [tests (test-plan)]
     (when (seq tests)
       (runner/run-tests tests)
-      (swap! ui-state dissoc :selected-run))))
+      (swap! ui-state dissoc :selected-run :selected-tests))))
 
 (defn terminate! [done]
   (runner/terminate! done))

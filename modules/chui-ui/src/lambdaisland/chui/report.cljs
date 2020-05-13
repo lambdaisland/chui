@@ -28,11 +28,15 @@
 (defmethod print-expr :default [m]
   [pprint-doc
    [:span
-    "Expected:" :line
-    [:nest (puget-printer/format-doc html-printer (:expected m))]
-    :break
-    "Actual:" :line
-    [:nest (puget-printer/format-doc html-printer (:actual m))]]])
+    (when (contains? m :expected)
+      [:span
+       "Expected:" :line
+       [:nest (puget-printer/format-doc html-printer (:expected m))]])
+    (when (contains? m :expected)
+      [:span
+       :break
+       "Actual:" :line
+       [:nest (puget-printer/format-doc html-printer (:actual m))]])]])
 
 (defn print-expr-= [m]
   (if (and (seq? (second (:actual m)))
@@ -61,10 +65,14 @@
               html-printer
               (ddiff/diff expected actual))])])])
     [:div
-     [:h4 "Expected"]
-     [pprint-doc (puget-printer/format-doc html-printer (:expected m))]
-     [:h4 "Actual"]
-     [pprint-doc (puget-printer/format-doc html-printer (:actual m))]]))
+     (when (contains? m :expected)
+       [:div
+        [:h4 "Expected"]
+        [pprint-doc (puget-printer/format-doc html-printer (:expected m))]])
+     (when (contains? m :actual)
+       [:div
+        [:h4 "Actual"]
+        [pprint-doc (puget-printer/format-doc html-printer (:actual m))]])]))
 
 (defmethod print-expr '= [m]
   (print-expr-= m))

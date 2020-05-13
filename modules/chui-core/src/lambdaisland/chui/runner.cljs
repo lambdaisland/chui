@@ -36,7 +36,7 @@
   (set! t/report (fn [m]
                    (when-let [report (:report (current-run))]
                      (report m))
-                   (t-report m))))
+                   #_(t-report m))))
 
 (defn restore-original-reporter []
   (set! t/report t-report))
@@ -45,17 +45,23 @@
   (swap! state
          update :runs
          (fn [runs]
-           (apply update runs (dec (count runs)) f args))))
+           (if (seq runs)
+             (apply update runs (dec (count runs)) f args)
+             runs))))
 
 (defn update-run-ns [f & args]
   (update-run
    (fn [run]
-     (apply update-in run [:nss (dec (count (:nss run)))] f args))))
+     (if (seq (:nss run))
+       (apply update-in run [:nss (dec (count (:nss run)))] f args)
+       run))))
 
 (defn update-run-var [f & args]
   (update-run-ns
    (fn [ns]
-     (apply update-in ns [:vars (dec (count (:vars ns)))] f args))))
+     (if (seq (:vars ns))
+       (apply update-in ns [:vars (dec (count (:vars ns)))] f args)
+       ns))))
 
 (defn get-and-clear-report-counters []
   (let [counters (:report-counters t/*current-env*)]
@@ -178,6 +184,20 @@
       (= :after stage)
       reverse)))
 
+(defn check-sync-fixtures-intor [ns fixtures]
+  {:name :check-synchronous-fixtures
+   :enter
+   (fn [ctx]
+     (doseq [fix fixtures
+             :when (fn? fix)]
+       (update-run-ns update :vars conj {:name "fixtures"
+                                         :meta {:line 0}
+                                         :start (js/Date.)
+                                         :assertions [{:type :fail
+                                                       :message (str "Synchronous fixtures are not supported, in " ns)}]
+                                         :done? false}))
+     ctx)})
+
 (defn begin-ns-intors [ns once-fixtures]
   (concat
    [(report-intor {:type :begin-test-ns :ns ns})
@@ -216,6 +236,8 @@
   (when-let [tests (seq tests)]
     (concat
      (begin-ns-intors ns once-fixtures)
+     [(check-sync-fixtures-intor ns once-fixtures)
+      (check-sync-fixtures-intor ns each-fixtures)]
      (->> tests
           (sort-by (comp :line :meta))
           (map var-intors)

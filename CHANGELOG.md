@@ -2,6 +2,8 @@
 
 ## Added
 
+- Added a warning when synchronous fixtures are used, these are not supported
+
 ## Fixed
 
 - Make the whole namespace name and surrounding block a click target for toggle
@@ -9,6 +11,12 @@
 ## Changed
 
 - Show original form in failing assertion
+- Change select behaviour in column 3 to be more intuitive
+- Sort namespaces by name and vars by line number
+- Don't delegate to the original cljs.test/report, no need for all that noise in
+  the console
+- Only show expected/actual sections when the assertion contains the relevant
+  keys
 
 # 0.0.106 (2020-05-13 / cafb56e)
 
