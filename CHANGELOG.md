@@ -1,10 +1,8 @@
 # Unreleased
 
-## Added
-
 ## Fixed
 
-## Changed
+- chui-ui: include compiled styles.clj in jar, not garden-based styles.clj
 
 # 0.0.103 (2020-05-13 / 70c2df1)
 
