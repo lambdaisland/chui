@@ -42,19 +42,25 @@
     (let [[_ expected & actuals] (-> m :actual second)]
       [:div
        [:h4 "Expected"]
-       [pprint-doc (puget-printer/format-doc html-printer expected)]
-       [:h4 "Actual"]
-       (for [[i actual] (map vector (range )actuals)]
+       (for [[i form] (map vector (range) (drop 2 (:expected m)))]
          ^{:key (str i)}
-         [pprint-doc
-          (puget-printer/format-doc
-           html-printer
-           (if (and (coll? expected) (every? coll? actuals))
-             (ddiff/diff expected actual)
-             actual))])])
+         [pprint-doc (puget-printer/format-doc html-printer form)])
+       [:h4 "To equal"]
+       [pprint-doc (puget-printer/format-doc html-printer expected)]
+       [:h4 "Actual value"]
+       (for [[i actual] (map vector (range) actuals)]
+         ^{:key (str i)}
+         [pprint-doc (puget-printer/format-doc html-printer actual)])
+       (when (and (coll? expected) (every? coll? actuals))
+         [:div
+          [:h4 "Diff"]
+          (for [[i actual] (map vector (range) actuals)]
+            ^{:key (str i)}
+            [pprint-doc
+             (puget-printer/format-doc
+              html-printer
+              (ddiff/diff expected actual))])])])
     [:div
-     [:h4 "In"]
-     [pprint-doc (puget-printer/format-doc html-printer (list 'is expected))]
      [:h4 "Expected"]
      [pprint-doc (puget-printer/format-doc html-printer (:expected m))]
      [:h4 "Actual"]

@@ -4,7 +4,11 @@
 
 ## Fixed
 
+- Make the whole namespace name and surrounding block a click target for toggle
+
 ## Changed
+
+- Show original form in failing assertion
 
 # 0.0.106 (2020-05-13 / cafb56e)
 

@@ -34,12 +34,15 @@
          :selected
          (set ns-names)))
 
-(defn toggle-ns-select [namespace-name add?]
+(defn toggle-ns-select [namespace-name]
   (swap! runner/state
          update
          :selected
-         (fnil (if add? conj disj) #{})
-         namespace-name))
+         (fn [selected]
+           (let [selected (set selected)]
+             (if (contains? selected namespace-name)
+               (disj selected namespace-name)
+               (conj selected namespace-name))))))
 
 (defn filtered-nss []
   (let [{:keys [query regexp?]} @ui-state
@@ -319,15 +322,10 @@
               :when (< 0 test-count)]
           ^{:key ns-str}
           [:div.namespace-links.selection-target
-           {:class (when (contains? selected ns-sym) "selected")}
-           [:input
-            {:id ns-str
-             :name ns-str
-             :type "checkbox"
-             :on-click #(when (str/blank? query)
-                          (toggle-ns-select ns-sym (.. % -target -checked)))}]
-           [:label {:for ns-str}
-            [:span ns-str]]
+           {:class (when (contains? selected ns-sym) "selected")
+            :on-click #(when (str/blank? query)
+                         (toggle-ns-select ns-sym))}
+           [:span ns-str]
            [:aside
             [:small test-count (if (= 1 test-count)
                                  " test"
