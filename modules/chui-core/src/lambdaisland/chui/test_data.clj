@@ -14,13 +14,6 @@
    :var  `(var ~(:name var))
    :meta `'~(:meta var)})
 
-(defn- all-cljs-vars []
-  (def env @env/*compiler*)
-  (->> @env/*compiler*
-       :cljs.analyzer/namespaces
-       vals
-       (mapcat (comp vals :defs))))
-
 (defn- cljs-nss [env]
   (vals (:cljs.analyzer/namespaces env)))
 

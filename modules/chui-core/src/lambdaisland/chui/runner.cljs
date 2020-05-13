@@ -305,8 +305,8 @@
      (install-custom-reporter)
      (let [ctx-promise (-> (:ctx run)
                            (intor/enqueue #_(interpose (slowdown-intor 300))
-                                          (interpose (next-tick-intor)
-                                                     (mapcat #(apply ns-intors %) tests)))
+                                          #_(interpose (next-tick-intor))
+                                          (mapcat #(apply ns-intors %) tests))
                            intor/execute)]
        (update-run assoc :donep ctx-promise)
        (p/let [ctx ctx-promise]

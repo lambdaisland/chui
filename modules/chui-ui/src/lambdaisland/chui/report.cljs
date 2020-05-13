@@ -53,6 +53,8 @@
              (ddiff/diff expected actual)
              actual))])])
     [:div
+     [:h4 "In"]
+     [pprint-doc (puget-printer/format-doc html-printer (list 'is expected))]
      [:h4 "Expected"]
      [pprint-doc (puget-printer/format-doc html-printer (:expected m))]
      [:h4 "Actual"]
