@@ -243,14 +243,18 @@
       ["&::-webkit-progress-bar" {:background (tomorrow :gray5)}]
       ["&::-moz-progress-bar" {:background error-color}]]]]
 
-   [:.test-results {:line-height "1.6rem"
+   [:.test-results {:grid-column "1 / span 2"
+                    :line-height "1.6rem"
                     :text-align :justify
                     :margin "0 1rem"
-                    :overflow :hidden}
-    [:.ns {:overflow-wrap :anywhere}]
-    [:.var {:margin-right "2px"}
+                    :overflow :hidden
+                    :font-size "50%"}
+    [:.ns {;;:border "1px solid darkslategray"
+           :overflow-wrap :anywhere}]
+    [:.var {:border-right "1px solid transparent"}
      [:&:last-child {:border-style :none}]]
-    [:output {:display :inline-flex}
+    [:output {:width "1em"
+              :font-size "1.6em"}
      [:.pass {:background-color pass-color}]
      [:.fail {:background-color fail-color}]
      [:.error {:background-color error-color}]]]
@@ -277,7 +281,7 @@
                         :flex-wrap :wrap}]
     [:.ns-run-var
      {:padding-left ".2rem"}
-     [:.test-results {:margin 0}]
+     [:.test-results {:margin "-1px 0 0 0"}]
      [:header
       {:background-color :initial
        :color :inherit
