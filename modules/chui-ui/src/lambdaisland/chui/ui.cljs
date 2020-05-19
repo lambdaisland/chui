@@ -16,15 +16,9 @@
 ;; State
 
 (defonce ui-state (reagent/atom {:only-failing? true}))
-(defonce runner-state (reagent/atom {}))
 
-;; We don't want the runner to depend on reagent, but we do want to watch it for
-;; changes, so instead of making runner/state an ratom we do this. Corrolary:
-;; use runner/state when swapping, use runner-state when derefing.
-(add-watch runner/state
-           ::runner-state
-           (fn [_ _ _ state]
-             (reset! runner-state state)))
+;; Replace the regular atom with an ratom
+(set! runner/state (reagent/atom @runner/state))
 
 (declare run-tests)
 
@@ -63,8 +57,8 @@
 (defn test-plan []
   (let [tests @test-data/test-ns-data]
     (cond
-      (seq (:selected @runner-state))
-      (select-keys tests (:selected @runner-state))
+      (seq (:selected @runner/state))
+      (select-keys tests (:selected @runner/state))
 
       (not (str/blank? (:query @ui-state)))
       (into {} (map (juxt :name identity)) (filtered-nss))
@@ -76,7 +70,7 @@
 
 (defn selected-run []
   (or (:selected-run @ui-state)
-      (last (:runs @runner-state))))
+      (last (:runs @runner/state))))
 
 (defn failing-tests []
   (filter #(runner/fail? (runner/var-summary %))
@@ -209,7 +203,7 @@
                                               :else  "Pass")]]]])]])))
 
 (defn test-stop-button []
-  (let [{:keys [runs]} @runner-state
+  (let [{:keys [runs]} @runner/state
         test-plan (test-plan)
         test-count (apply + (map (comp count :tests val) test-plan))]
     (if (false? (:done? (last runs)))
@@ -256,7 +250,7 @@
 (defn history [runs]
   [:section.column.history
    [:div.option
-    (let [{:keys [selected]} @runner-state
+    (let [{:keys [selected]} @runner/state
           {:keys [only-failing?]} @ui-state
           selected-run (selected-run)]
       (for [{:keys [id nss start done? terminated?] :as run} (reverse runs)
@@ -306,7 +300,7 @@
 (defn test-selector []
   (reagent/with-let [this (reagent/current-component)
                      _ (add-watch test-data/test-ns-data ::rerender #(reagent/force-update this))]
-    (let [{:keys [selected]} @runner-state
+    (let [{:keys [selected]} @runner/state
           {:keys [query]} @ui-state]
       [:section.column-namespaces
        [filter'n-run]
@@ -376,7 +370,7 @@
      [:p "All tests pass!"])])
 
 (defn col-count []
-  (let [runs? (seq (:runs @runner-state))]
+  (let [runs? (seq (:runs @runner/state))]
     (cond
       runs?
       4
@@ -384,7 +378,7 @@
       2)))
 
 (defn app []
-  (let [{:keys [selected runs]} @runner-state
+  (let [{:keys [selected runs]} @runner/state
         runs? (seq runs)]
     [:div#chui
      [:style (styles/inline)]

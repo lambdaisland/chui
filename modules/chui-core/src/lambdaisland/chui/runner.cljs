@@ -16,8 +16,6 @@
                       :ctx-promise nil
                       :selection nil}))
 
-(:runs @state)
-
 (defonce t-report t/report)
 
 (defn current-run []
@@ -80,17 +78,20 @@
 ;; at least it kind of works in both Firefox and Chrome. To do this properly
 ;; we'll have to use something like stacktrace.js
 (defn file-and-line []
-  (let [frame (-> (js/Error.)
-                  .-stack
-                  (str/split #"\n")
-                  (->> (drop-while #(not (str/includes? % "do_report"))))
-                  (nth 1)
-                  (str/split #":"))
-        line-col (drop (- (count frame) 2) frame)
-        file (str/join ":" (take (- (count frame) 2) frame))]
-    {:file file
-     :line (js/parseInt (re-find #"\d+" (first line-col)) 10)
-     :column (js/parseInt (re-find #"\d+" (second line-col)) 10)}))
+  (let [frames (-> (js/Error.)
+                   .-stack
+                   (str/split #"\n")
+                   (->> (drop-while #(not (str/includes? % "do_report")))))]
+    ;; If we don't find a do-report frame then either we're running shadow's
+    ;; monkey-patched cljs.test, or CLJS-3248 has been merged. Either way it
+    ;; means we already have accurate line/file info, so we leave them alone.
+    (when (seq frames)
+      (when-let [frame (some-> frames second (str/split #":"))]
+        (let [line-col (drop (- (count frame) 2) frame)
+              file     (str/join ":" (take (- (count frame) 2) frame))]
+          {:file   file
+           :line   (js/parseInt (re-find #"\d+" (first line-col)) 10)
+           :column (js/parseInt (re-find #"\d+" (second line-col)) 10)})))))
 
 (defmulti report :type)
 (defmethod report :default [_])

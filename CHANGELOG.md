@@ -1,10 +1,9 @@
 # Unreleased
 
-## Added
-
 ## Fixed
 
-## Changed
+- Work around an issue that cropped up due to Shadow's monkey patching of
+  cljs.test.
 
 # 0.0.111 (2020-05-13 / 7ce25e2)
 

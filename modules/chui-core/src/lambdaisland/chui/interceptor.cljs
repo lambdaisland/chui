@@ -63,8 +63,7 @@
   [{::keys [queue stack] :as ctx}]
   (let [interceptor (peek queue)
         new-queue   (pop queue)
-        new-stack   (conj stack interceptor)
-        new-context (assoc ctx ::queue new-queue #_#_ ::stack new-stack)]
+        new-context (assoc ctx ::queue new-queue)]
     (try-stage :enter interceptor new-context)))
 
 #_
