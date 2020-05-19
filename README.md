@@ -63,8 +63,8 @@ project.clj
 
 The easiest way to use this right now is with Shadow-cljs's `:browser-test` target.
 
-Use the `lambdaisland.chui.shadowrun` namespace as you `:runner-ns`, and you
-should be good to go.
+Use the `lambdaisland.chui.shadow.browser-runner` namespace as your
+`:runner-ns`, and you should be good to go.
 
 ``` clojure
 {:dev-http
