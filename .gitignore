@@ -14,3 +14,4 @@ package-lock.json
 pom.xml
 modules/chui-ui/resources/public/js
 modules/chui-ui/release/lambdaisland/chui/styles.clj
+.store

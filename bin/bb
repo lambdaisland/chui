@@ -63,7 +63,7 @@ else
     bb_path="$install_dir/bb"
 fi
 
-actual_version="$(bb --version | sed 's/babashka v//')"
+actual_version="$($bb_path --version | sed 's/babashka v//')"
 
 vercomp $actual_version $version
 case $? in
