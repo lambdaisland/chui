@@ -1,4 +1,5 @@
 (ns lambdaisland.chui.remote
+  {:dev/always true}
   (:require [cljs.pprint :as pp :include-macros true]
             [cljs.test :as t]
             [clojure.browser.repl :as browser-repl]
@@ -16,7 +17,10 @@
             [platform :as platform]
             [goog.dom :as gdom]
             [kitchen-async.promise :as p])
+  (:require-macros [lambdaisland.chui.remote.macros :refer [working-directory]])
   (:import [goog.string StringBuffer]))
+
+(defn ^:export init [_])
 
 (log/set-levels '{:glogi/root :debug})
 
@@ -32,13 +36,6 @@
 (.setItem js/localStorage (str `agent-id) agent-id)
 
 (def client-id (str (random-uuid)))
-
-;; in browser environments we stick the client-id in the URL, so a reload in the
-;; same tab reuses the same client-id
-(when (exists? js/document.location)
-  (when (= "" js/document.location.hash)
-    (set! js/document.location.hash client-id))
-  (set! client-id (subs js/document.location.hash 1)))
 
 (log/info :agent-id agent-id :client-id client-id)
 
@@ -226,18 +223,21 @@
           :test-data (scrub-test-data
                       @test-data/test-ns-data)}))
 
-(defn connect! [port]
+(defn connect! [uri]
+  (log/info ::connect! uri )
   (set! socket
-        (ws/connect! (str "ws://localhost:" port "/")
+        (ws/connect! uri
                      {:open
                       (fn [e]
                         (log/trace :ws-open (into {} (map (juxt keyword #(gobj/get e %))) (js/Object.keys e)))
-                        (send! {:type :connected
-                                :client-info
-                                {:has-dom?  (exists? js/document)
-                                 :agent-id  agent-id
-                                 :client-id client-id
-                                 :platform  (.-description platform)}}))
+                        (send! {:type ::connected
+                                :funnel/whoami
+                                {:type              :lambdaisland.chui.remote
+                                 :id                client-id
+                                 :has-dom?          (exists? js/document)
+                                 :agent-id          agent-id
+                                 :platform          (.-description platform)
+                                 :working-directory (working-directory)}}))
 
                       :error
                       (fn [e]
@@ -259,12 +259,18 @@
     (log/info :msg "Disconnecting websocket")
     (ws/close! socket)))
 
-(connect! 8080)
+(defonce init-conn
+  (connect!
+   (let [protocol js/location.protocol
+         hostname js/location.hostname
+         https? (str/starts-with? protocol "https")]
+     (str (if https? "wss" "ws") "://" hostname ":" (if https? "44221" "44220")))))
 
-;; temporary, for testing
-(when-not (.getElementById js/document "chui-container")
-  (let [app (gdom/createElement "div")]
-    (gdom/setProperties app #js {:id "chui-container"})
-    (gdom/append js/document.body app)))
+(defonce ui ;; temporary, for testing
+  (do
+    (when-not (.getElementById js/document "chui-container")
+      (let [app (gdom/createElement "div")]
+        (gdom/setProperties app #js {:id "chui-container"})
+        (gdom/append js/document.body app)))
 
-(ui/render! (.getElementById js/document "chui-container"))
+    (ui/render! (.getElementById js/document "chui-container"))))

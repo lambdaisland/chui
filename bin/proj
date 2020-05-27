@@ -25,8 +25,8 @@
              :description "ClojureScript Test Runner Core"}
             {:name        "chui-ui"
              :description "Browser UI for the Chui test runner"}
-            {:name        "chui-relay"
-             :description "Relay for connecting test tooling to ClojureScript runtimes"
+            {:name        "chui-remote"
+             :description "Funnel client for connecting test tooling to ClojureScript runtimes"
              :release     false}
             {:name        "chui-shadow"
              :description "Chui-based test runner namespaces to be used with Shadow-cljs"}]

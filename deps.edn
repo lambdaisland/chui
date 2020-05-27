@@ -1,12 +1,9 @@
 {:paths []
 
  :deps
- {org.clojure/clojure       {:mvn/version "1.10.1"}
-  org.clojure/clojurescript {:mvn/version "1.10.764"}
-
-  lambdaisland/chui-core   {:local/root "modules/chui-core"}
+ {lambdaisland/chui-core   {:local/root "modules/chui-core"}
   lambdaisland/chui-ui     {:local/root "modules/chui-ui"}
-  ;; lambdaisland/chui-relay  {:local/root "modules/chui-relay"}
+  lambdaisland/chui-remote {:local/root "modules/chui-remote"}
   lambdaisland/chui-shadow {:local/root "modules/chui-shadow"}}
 
  :aliases
