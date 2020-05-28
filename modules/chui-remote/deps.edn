@@ -1,10 +1,5 @@
 {:paths ["src" "resources"]
  :deps
- {io.pedestal/pedestal.log       {:mvn/version "0.5.2"}
-  ch.qos.logback/logback-classic {:exclusions  [org.slf4j/slf4j-api org.slf4j/slf4j-nop]
-                                  :mvn/version "1.2.3"}
-  org.clojure/core.async         {:mvn/version "1.1.587"}
-
-  ;; TODO: Somehow transit-cljs is still not picking up our default :write
+ {;; TODO: Somehow transit-cljs is still not picking up our default :write
   ;; handler, will need to investigate. Reverting to our inlined transit-cljs.
   #_#_com.cognitect/transit-cljs     {:mvn/version "0.8.264"}}}
