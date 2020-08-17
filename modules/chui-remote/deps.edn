@@ -1,2 +1,2 @@
-{:paths ["src" "resources" "examples"]
+{:paths ["src" "resources"]
  :deps {lambdaisland/funnel-client {:mvn/version "0.0.9"}}}
