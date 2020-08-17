@@ -1,5 +1,5 @@
 ((nil . ((cider-clojure-cli-global-options     . "-A:dev:test")
-         (cider-custom-cljs-repl-init-form     . "(user/cljs-repl)")
+         (cider-custom-cljs-repl-init-form     . "(user/shadow-cljs-repl)")
          (cider-default-cljs-repl              . custom)
          (cider-preferred-build-tool           . clojure-cli)
          (cider-redirect-server-output-to-repl . t)

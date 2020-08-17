@@ -3,9 +3,9 @@
 (defmacro jit [sym]
   `(requiring-resolve '~sym))
 
-(defn cljs-repl
+(defn shadow-cljs-repl
   ([]
-   (cljs-repl :kaocha))
+   (shadow-cljs-repl :kaocha))
   ([build-id]
    ((jit shadow.cljs.devtools.server/start!))
    ((jit shadow.cljs.devtools.api/watch) build-id)
