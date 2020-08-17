@@ -1,8 +1,7 @@
 {:paths []
 
  :deps
- {lambdaisland/funnel-client {:local/root "../funnel-client"}
-  lambdaisland/chui-core     {:local/root "modules/chui-core"}
+ {lambdaisland/chui-core     {:local/root "modules/chui-core"}
   lambdaisland/chui-ui       {:local/root "modules/chui-ui"}
   lambdaisland/chui-remote   {:local/root "modules/chui-remote"}
   lambdaisland/chui-shadow   {:local/root "modules/chui-shadow"}}
