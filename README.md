@@ -25,12 +25,26 @@ of Chui, and their continuing support of the Clojure and ClojureScript
 ecosystem.
 
 <!-- opencollective -->
-### Support Lambda Island Open Source
 
-Chui is part of a growing collection of quality Clojure libraries and
-tools released on the Lambda Island label. If you find value in our work please
-consider [becoming a backer on Open Collective](http://opencollective.com/lambda-island#section-contribute)
-<!--/opencollective -->
+&nbsp;
+
+<img align="left" src="https://github.com/lambdaisland/open-source/raw/master/artwork/lighthouse_readme.png">
+
+&nbsp;
+
+## Support Lambda Island Open Source
+
+chui is part of a growing collection of quality Clojure libraries and
+tools released on the Lambda Island label. If you are using this project
+commercially then you are expected to pay it forward by
+[becoming a backer on Open Collective](http://opencollective.com/lambda-island#section-contribute),
+so that we may continue to enjoy a thriving Clojure ecosystem.
+
+&nbsp;
+
+&nbsp;
+
+<!-- /opencollective -->
 
 ## Motivation
 
