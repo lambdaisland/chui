@@ -1,5 +1,2 @@
-{:paths ["src" "resources"]
- :deps
- {;; TODO: Somehow transit-cljs is still not picking up our default :write
-  ;; handler, will need to investigate. Reverting to our inlined transit-cljs.
-  #_#_com.cognitect/transit-cljs     {:mvn/version "0.8.264"}}}
+{:paths ["src" "resources" "examples"]
+ :deps {lambdaisland/funnel-client {:mvn/version "0.0.9"}}}

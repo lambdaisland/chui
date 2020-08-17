@@ -4,97 +4,74 @@
             [cljs.test :as t]
             [clojure.browser.repl :as browser-repl]
             [clojure.string :as str]
+            [cognitect.transit :as transit]
+            [goog.dom :as gdom]
             [goog.dom :as gdom]
             [goog.object :as gobj]
-            [lambdaisland.chui.transit :as transit]
-            [lambdaisland.chui.websocket :as ws]
-            [lambdaisland.chui.ui :as ui]
+            [kitchen-async.promise :as p]
             [lambdaisland.chui.interceptor :as intor]
             [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.test-data :as test-data]
+            [lambdaisland.funnel-client :as funnel-client]
             [lambdaisland.glogi :as log]
-            [lambdaisland.glogi.console :as glogi-console]
-            [platform :as platform]
-            [goog.dom :as gdom]
-            [kitchen-async.promise :as p])
+            [lambdaisland.glogi.console :as glogi-console])
   (:require-macros [lambdaisland.chui.remote.macros :refer [working-directory]])
   (:import [goog.string StringBuffer]))
 
 (defn ^:export init [_])
 
-(log/set-levels '{:glogi/root :debug})
+(log/set-levels '{:glogi/root :finest})
 
 (glogi-console/install!)
-
-(def socket nil)
-
-;; Each browser / device gets an agent-id that is reused. Each instance/tab gets
-;; its own client-id
-(def agent-id (or (.getItem js/localStorage (str `agent-id))
-                  (str (random-uuid))))
-
-(.setItem js/localStorage (str `agent-id) agent-id)
-
-(def client-id (str (random-uuid)))
-
-(log/info :agent-id agent-id :client-id client-id)
-
-(test-data/capture-test-data!)
 
 (defn record-handler [type]
   (transit/write-handler (constantly type)
                          (fn [val]
                            (into {} val))))
 
-(def transit-handlers
-  (merge {:default
-          (transit/write-handler
-           (fn [o]
-             (str (type o)))
-           (fn [o]
-             (str o)))
+(swap! funnel-client/whoami
+       assoc
+       :lambdaisland.chui.remote? true)
 
-          cljs.core/Var
-          (transit/write-handler
-           (constantly "var")
-           (fn [rep] (meta rep)))}
-         (when (exists? matcher-combinators.model/Mismatch)
-           {^:cljs.analyzer/no-resolve matcher-combinators.model.Mismatch
-            (record-handler "matcher-combinators.model.Mismatch")})
-         (when (exists? matcher-combinators.model/Missing)
-           {^:cljs.analyzer/no-resolve matcher-combinators.model.Missing
-            (record-handler "matcher-combinators.model.Missing")})
-         (when (exists? matcher-combinators.model/Unexpected)
-           {^:cljs.analyzer/no-resolve matcher-combinators.model.Unexpected
-            (record-handler "matcher-combinators.model.Unexpected")})
-         (when (exists? matcher-combinators.model/InvalidMatcherType)
-           {^:cljs.analyzer/no-resolve matcher-combinators.model.InvalidMatcherType
-            (record-handler "matcher-combinators.model.InvalidMatcherType")})
-         (when (exists? matcher-combinators.model/InvalidMatcherContext)
-           {^:cljs.analyzer/no-resolve matcher-combinators.model.InvalidMatcherContext
-            (record-handler "matcher-combinators.model.InvalidMatcherContext")})
-         (when (exists? matcher-combinators.model/FailedPredicate)
-           {^:cljs.analyzer/no-resolve matcher-combinators.model.FailedPredicate
-            (record-handler "matcher-combinators.model.FailedPredicate")})
-         (when (exists? matcher-combinators.model/TypeMismatch)
-           {^:cljs.analyzer/no-resolve matcher-combinators.model.TypeMismatch
-            (record-handler "matcher-combinators.model.TypeMismatch")})))
+(swap! funnel-client/transit-write-handlers
+       merge
 
-(def transit-writer (transit/writer :json {:handlers transit-handlers}))
+       {:default (transit/write-handler
+                  (fn [o]
+                    (str (type o)))
+                  (fn [o]
+                    (str o)))
 
-(defn to-transit [value]
-  (transit/write transit-writer value))
+        cljs.core/Var (transit/write-handler
+                       (constantly "var")
+                       (fn [rep] (meta rep)))}
 
-(defn from-transit [string]
-  (transit/read (transit/reader :json) string))
+       (when (exists? matcher-combinators.model/Mismatch)
+         {^:cljs.analyzer/no-resolve matcher-combinators.model.Mismatch
+          (record-handler "matcher-combinators.model.Mismatch")})
+       (when (exists? matcher-combinators.model/Missing)
+         {^:cljs.analyzer/no-resolve matcher-combinators.model.Missing
+          (record-handler "matcher-combinators.model.Missing")})
+       (when (exists? matcher-combinators.model/Unexpected)
+         {^:cljs.analyzer/no-resolve matcher-combinators.model.Unexpected
+          (record-handler "matcher-combinators.model.Unexpected")})
+       (when (exists? matcher-combinators.model/InvalidMatcherType)
+         {^:cljs.analyzer/no-resolve matcher-combinators.model.InvalidMatcherType
+          (record-handler "matcher-combinators.model.InvalidMatcherType")})
+       (when (exists? matcher-combinators.model/InvalidMatcherContext)
+         {^:cljs.analyzer/no-resolve matcher-combinators.model.InvalidMatcherContext
+          (record-handler "matcher-combinators.model.InvalidMatcherContext")})
+       (when (exists? matcher-combinators.model/FailedPredicate)
+         {^:cljs.analyzer/no-resolve matcher-combinators.model.FailedPredicate
+          (record-handler "matcher-combinators.model.FailedPredicate")})
+       (when (exists? matcher-combinators.model/TypeMismatch)
+         {^:cljs.analyzer/no-resolve matcher-combinators.model.TypeMismatch
+          (record-handler "matcher-combinators.model.TypeMismatch")}))
+
+(declare socket)
 
 (defn send! [message]
-  (assert (ws/open? socket))
-  (log/debug :websocket/send message)
-  (when (ws/open? socket)
-    (ws/send! socket (to-transit (assoc message
-                                        :client-id client-id
-                                        :agent-id agent-id)))))
+  (funnel-client/send socket message))
 
 ;; TODO: replace with deep-diff
 #_
@@ -223,49 +200,19 @@
           :test-data (scrub-test-data
                       @test-data/test-ns-data)}))
 
-(defn connect! [uri]
-  (log/info ::connect! uri )
-  (set! socket
-        (ws/connect! uri
-                     {:open
-                      (fn [e]
-                        (log/trace :ws-open (into {} (map (juxt keyword #(gobj/get e %))) (js/Object.keys e)))
-                        (send! {:type ::connected
-                                :funnel/whoami
-                                {:type              :lambdaisland.chui.remote
-                                 :id                client-id
-                                 :has-dom?          (exists? js/document)
-                                 :agent-id          agent-id
-                                 :platform          (.-description platform)
-                                 :working-directory (working-directory)}}))
-
-                      :error
-                      (fn [e]
-                        (log/warn :websocket {:callback :onerror :event e}))
-
-                      :message
-                      (fn [e]
-                        (let [msg (from-transit (ws/message-data e))]
-                          (log/finest :ws-message msg)
-                          (handle-message msg)))
-
-                      :close
-                      (fn [e]
-                        (log/info :websocket {:callback :onclose :event e})
-                        (prn :close e))})))
+(defn connect! []
+  (set! socket (funnel-client/connect {:on-message (fn [_ msg] (handle-message msg))})))
 
 (defn disconnect! []
   (when socket
-    (log/info :msg "Disconnecting websocket")
-    (ws/close! socket)))
+    (log/info :msg "Disconnecting funnel")
+    (funnel-client/disconnect! socket)
+    (set! socket nil)))
 
-(defonce init-conn
-  (connect!
-   (let [protocol js/location.protocol
-         hostname js/location.hostname
-         https? (str/starts-with? protocol "https")]
-     (str (if https? "wss" "ws") "://" hostname ":" (if https? "44221" "44220")))))
+(defonce init-conn (connect!))
 
+
+#_
 (defonce ui ;; temporary, for testing
   (do
     (when-not (.getElementById js/document "chui-container")
