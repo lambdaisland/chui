@@ -1,10 +1,8 @@
-# 0.0.129 (2020-08-17 / 4160baa)
+# Unreleased
 
 ## Added
 
-## Fixed
-
-## Changed
+- First release of chui-remote, based on Funnel-client
 
 # 0.0.117 (2020-05-19 / 039e492)
 
