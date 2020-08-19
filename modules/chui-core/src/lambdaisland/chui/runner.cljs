@@ -345,13 +345,16 @@
   ([]
    (terminate! nil))
   ([callback]
-   (when-let [run (current-run)]
-     (when-let [donep (and callback (:donep run))]
-       (p/let [ctx donep]
-         (when-not (:done? run)
-           (update-run assoc :terminated? true))
-         (callback ctx)))
-     ((:terminate! run)))))
+   (if-let [run (current-run)]
+     (do
+       (if-let [donep (and callback (:donep run))]
+         (p/let [ctx donep]
+           (when-not (:done? run)
+             (update-run assoc :terminated? true))
+           (callback ctx))
+         (callback nil))
+       ((:terminate! run)))
+     (callback nil))))
 
 (comment
   (defn legacy-reporter [reporter]
