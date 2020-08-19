@@ -71,8 +71,18 @@
 
 (declare socket)
 
+(def last-msg (atom (p/resolve nil)))
+
+;; This is a bit hairy, assure that messages are sent in order of calling
+;; `send!`, even though `send!` can be called with a promise. To do so we stack
+;; promises, relying on the fact that successive `then` calls are handled in
+;; order
 (defn send! [message]
-  (funnel-client/send socket message))
+  (swap! last-msg
+         p/then
+         (fn [_]
+           (p/let [m message]
+             (funnel-client/send socket m)))))
 
 ;; TODO: replace with deep-diff
 #_
