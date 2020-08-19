@@ -2,9 +2,16 @@
 
 ## Added
 
+- Source mapped stack trace in UI and remote
+
 ## Fixed
 
+- Make sure terminate callback is always called, this prevents Shadow's
+  reloading from hanging indefinitely
+
 ## Changed
+
+- Better exception reporting
 
 # 0.0.133 (2020-08-17 / af3a0d3)
 
