@@ -1,9 +1,13 @@
 (ns lambdaisland.chui.report
   (:require [clojure.pprint :as pprint]
+            [kitchen-async.promise :as p]
+            [lambdaisland.chui.stacktrace :as stacktrace]
             [lambdaisland.deep-diff2 :as ddiff]
-            [lambdaisland.deep-diff2.puget.printer :as puget-printer]
             [lambdaisland.deep-diff2.printer-impl :as printer-impl]
-            [lambdaisland.deep-diff2.puget.color.html]))
+            [lambdaisland.deep-diff2.puget.color.html]
+            [lambdaisland.deep-diff2.puget.printer :as puget-printer]
+            [reagent.core :as reagent]
+            [clojure.string :as str]))
 
 (def html-printer (ddiff/printer {:color-markup :html-classes}))
 
@@ -126,10 +130,18 @@
 
 (defmethod fail-summary :error [{exception :actual
                                  :keys [testing-contexts testing-vars message] :as m}]
-  [:div.fail-summary
-   [:aside "ERROR"]
-   [message-context m]
-   [:div (str exception)]
-   [:pre (.-stack exception)]
-   [:a.bottom-link {:on-click #(do (js/console.log exception) (.preventDefault %)) :href "#"} "Log error"]
-   ])
+  (reagent/with-let [trace-p (stacktrace/from-error exception)
+                     trace (reagent/atom nil)]
+    (p/let [t trace-p] (reset! trace t))
+    [:div.fail-summary
+     [:aside "ERROR"]
+     [message-context m]
+     [:div (str exception)]
+     [:pre
+      (if-let [trace @trace]
+        (doall
+         (for [[{:keys [function file line column]} i] (map vector trace (range))]
+           ^{:key i}
+           [:<> function " (" [:a {:href file} file] ":" line ":" column ")\n"]))
+        (.-stack exception))]
+     [:a.bottom-link {:on-click #(do (js/console.log exception) (.preventDefault %)) :href "#"} "Log error"]]))

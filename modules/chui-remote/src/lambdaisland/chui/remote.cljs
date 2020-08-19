@@ -12,6 +12,7 @@
             [lambdaisland.chui.interceptor :as intor]
             [lambdaisland.chui.runner :as runner]
             [lambdaisland.chui.test-data :as test-data]
+            [lambdaisland.chui.stacktrace :as stacktrace]
             [lambdaisland.funnel-client :as funnel-client]
             [lambdaisland.glogi :as log]
             [lambdaisland.glogi.console :as glogi-console])
@@ -105,26 +106,29 @@
    :cljs.test/message m
    :cljs.test/testing-contexts (:testing-contexts (t/get-current-env))})
 
+#_(assoc m :kaocha.report/printed-expression
+         (pretty-print-failure m))
+
 (defn wrap-report [report]
   (fn [m]
     (send!
-     (cljs-test-msg
-      (case (:type m)
-        :fail
-        m
-        #_
-        (assoc m :kaocha.report/printed-expression
-               (pretty-print-failure m))
-        :error
-        (let [error      (:actual m)
-              stacktrace (.-stack (:actual m))]
-          (assoc m :kaocha.report/printed-expression
-                 (str (str/trim stacktrace) "\n")
-                 :kaocha.report/error-type
-                 (str "js/" (.-name error))
-                 :message
-                 (or (:message m) (.-message error))))
-        m)))
+     (case (:type m)
+       :fail (cljs-test-msg m)
+       :error
+       (let [error (:actual m)]
+         (p/let [trace (stacktrace/from-error error)]
+           (let [rendered (str/join
+                           "\n"
+                           (for [{:keys [function file line column]} trace]
+                             (str function " (" file ":" line ":" column ")")))]
+             (log/error :just-making-sure rendered)
+             (cljs-test-msg
+              (assoc m
+                     :kaocha.report/printed-expression (str error "\n" rendered "\n")
+                     :kaocha.report/error-type (str "js/" (.-name error))
+                     :message (or (:message m) (.-message error)))))))
+       ;;:else
+       (cljs-test-msg m)))
     (report m)))
 
 (defmulti handle-message :type)
@@ -211,6 +215,9 @@
 
 (defonce init-conn (connect!))
 
+
+(when (exists? js/document)
+  (set! js/document.title (:id @funnel-client/whoami)))
 
 #_
 (defonce ui ;; temporary, for testing
