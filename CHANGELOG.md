@@ -1,10 +1,8 @@
 # Unreleased
 
-## Added
-
-## Fixed
-
 ## Changed
+
+- Upgrade dependencies, glogi, funnel-client, deep-diff2
 
 # 0.0.141 (2020-08-19 / 7d1865b)
 
