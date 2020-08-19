@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>lambdaisland</groupId>
   <artifactId>chui-core</artifactId>
-  <version>0.0.141</version>
+  <version>0.0.146</version>
   <name>chui-core</name>
   <description>ClojureScript Test Runner Core</description>
   <url>https://github.com/lambdaisland/chui</url>
@@ -22,13 +22,13 @@
     <url>https://github.com/lambdaisland/chui</url>
     <connection>scm:git:git://github.com/lambdaisland/chui.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/chui.git</developerConnection>
-    <tag>6d6948df3a57d3d50da3346005a5e18c4ed2333d</tag>
+    <tag>30e9fcdd8992873858e773a62393b156d55cb796</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>deep-diff2</artifactId>
-      <version>2.0.0-93</version>
+      <version>2.0.108</version>
     </dependency>
     <dependency>
       <groupId>kitchen-async</groupId>
@@ -38,7 +38,7 @@
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>glogi</artifactId>
-      <version>1.0.63</version>
+      <version>1.0.70</version>
     </dependency>
   </dependencies>
   <build>
@@ -56,7 +56,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>6d6948df3a57d3d50da3346005a5e18c4ed2333d</git-revision>
+              <git-revision>30e9fcdd8992873858e773a62393b156d55cb796</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
