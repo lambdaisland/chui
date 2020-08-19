@@ -9,7 +9,12 @@
 
 (defn- test-var-info [var]
   {:name `'~(:name var)
-   :test `(:test (meta (var ~(:name var))))
+   :test `(or (:test (meta (var ~(:name var))))
+              (fn []
+                (cljs.test/do-report {:type :fail
+                                      :file (:file (meta (var ~(:name var))))
+                                      :line (:line (meta (var ~(:name var))))
+                                      :message (str "Test var " '~(:name var) " is known to the compiler, but was not defined at runtime. Did the file load correctly?")})))
    :ns   `'~(var-ns var)
    :var  `(var ~(:name var))
    :meta `'~(:meta var)})

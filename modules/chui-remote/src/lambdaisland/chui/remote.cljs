@@ -131,7 +131,6 @@
                            "\n"
                            (for [{:keys [function file line column]} trace]
                              (str function " (" file ":" line ":" column ")")))]
-             (log/error :just-making-sure rendered)
              (cljs-test-msg
               (assoc m
                      :kaocha.report/printed-expression (str error "\n" rendered "\n")

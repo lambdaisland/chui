@@ -1,10 +1,9 @@
 # Unreleased
 
-## Added
-
 ## Fixed
 
-## Changed
+- Fail more gracefully when a test definition happens to be not available at
+  runtime due to a load error
 
 # 0.0.146 (2020-08-19 / 6e324e2)
 
