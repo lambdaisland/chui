@@ -1,3 +1,2 @@
 {:paths ["src"]
- :deps
- {lambdaisland/chui-ui {:local/root "../chui-ui"}}}
+ :deps {lambdaisland/chui-ui {:local/root "../chui-ui"}}}

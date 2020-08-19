@@ -2,9 +2,12 @@
   "name": "chui",
   "license": "MPL-2.0",
   "dependencies": {
+    "@cljs-oss/module-deps": "^1.1.1",
     "platform": "^1.3.5",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "stacktrace-js": "^2.0.2"
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "stack-trace": "0.0.10",
+    "stacktrace-js": "^2.0.2",
+    "ws": "^7.3.1"
   }
 }

@@ -1,17 +1,15 @@
 {:deps
  {:aliases [:dev]}
 
- :dev-http
- {8347 "classpath:public"}
-
  :builds
  {:kaocha
   {:target     :browser-test
-   :runner-ns  lambdaisland.chui.remote
-   ;;:runner-ns  lambdaisland.chui.shadow.browser-runner
-   :test-dir   "modules/chui-ui/resources/public"
-   :asset-path "/ui"
+   ;; :runner-ns  lambdaisland.chui.remote
+   :runner-ns  lambdaisland.chui.shadow.browser-runner
+   :test-dir   "out/browser-test"
    :ns-regexp  "-test$"
-   :devtools   {:repl-pprint true}}}
+   :devtools   {:repl-pprint true
+                :http-port 8347
+                :http-root "out/browser-test"}}}
 
  :cache-blockers #{lambdaisland.chui.styles}}

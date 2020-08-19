@@ -1,4 +1,4 @@
 {:paths ["src"]
- :deps  {lambdaisland/glogi        {:mvn/version "1.0.63"
-                                    :exclusions [org.clojure/clojurescript]}
-         kitchen-async             {:mvn/version "0.1.0-SNAPSHOT"}}}
+ :deps  {lambdaisland/glogi          {:mvn/version "1.0.63" :exclusions [org.clojure/clojurescript]}
+         lambdaisland/deep-diff2     {:mvn/version "2.0.0-93" :exclusions [org.clojure/clojurescript]}
+         kitchen-async/kitchen-async {:mvn/version "0.1.0-SNAPSHOT" :exclusions [org.clojure/core.async]}}}
