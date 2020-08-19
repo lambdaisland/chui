@@ -246,11 +246,13 @@
      (end-ns-intors ns once-fixtures))))
 
 (defn on-intor-error [ctx error]
-  (t/report
-   {:type :error
-    :message "Uncaught exception, not in assertion."
-    :expected nil
-    :actual (ex-cause error)})
+  (let [error (or (ex-cause error) error)] ; unwrap the ex-info created by the interceptor chaing
+    (t/report
+     {:type :error
+      :message "Uncaught exception, not in assertion."
+      :expected nil
+      :actual error
+      :kaocha.result/exception error}))
   ctx)
 
 ;; for debugging / visualizing progress
