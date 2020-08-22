@@ -2,7 +2,6 @@
   {:dev/always true}
   (:require [cljs.pprint :as pp :include-macros true]
             [cljs.test :as t]
-            [clojure.browser.repl :as browser-repl]
             [clojure.string :as str]
             [cognitect.transit :as transit]
             [goog.dom :as gdom]
