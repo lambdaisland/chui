@@ -169,14 +169,18 @@
       intor/execute))
 
 (defmethod handle-message :start-ns [{:keys [ns] :as msg}]
-  (p/let [ctx (execute-chain (runner/begin-ns-intors ns (get @test-data/test-ns-data ns)))]
-    (runner/update-run assoc :ctx ctx)
-    (send! {:type :ns-started :reply-to (:id msg)})))
+  (let [ns-data (get @test-data/test-ns-data ns)]
+    (log/trace :start-ns/starting ns-data)
+    (p/let [ctx (execute-chain (runner/begin-ns-intors ns (:once-fixtures ns-data)))]
+      (runner/update-run assoc :ctx ctx)
+      (send! {:type :ns-started :reply-to (:id msg)}))))
 
 (defmethod handle-message :finish-ns [{:keys [ns] :as msg}]
-  (p/let [ctx (execute-chain (runner/end-ns-intors ns (get @test-data/test-ns-data ns)))]
-    (runner/update-run assoc :ctx ctx)
-    (send! {:type :ns-finished :reply-to (:id msg)})))
+  (let [ns-data (get @test-data/test-ns-data ns)]
+    (log/trace :finish-ns/starting ns-data)
+    (p/let [ctx (execute-chain (runner/end-ns-intors ns (:once-fixtures ns-data)))]
+      (runner/update-run assoc :ctx ctx)
+      (send! {:type :ns-finished :reply-to (:id msg)}))))
 
 (defmethod handle-message :run-test [{:keys [test] :as msg}]
   (let [ns        (symbol (namespace test))
