@@ -1,10 +1,8 @@
 # Unreleased
 
-## Added
-
 ## Fixed
 
-## Changed
+- Fix :once fixtures when running via chui-remote
 
 # 0.0.149 (2020-08-19 / adf2c24)
 
