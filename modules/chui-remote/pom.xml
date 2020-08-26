@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>lambdaisland</groupId>
   <artifactId>chui-remote</artifactId>
-  <version>0.0.149</version>
+  <version>0.0.156</version>
   <name>chui-remote</name>
   <description>Funnel client for connecting test tooling to ClojureScript runtimes</description>
   <url>https://github.com/lambdaisland/chui</url>
@@ -22,13 +22,13 @@
     <url>https://github.com/lambdaisland/chui</url>
     <connection>scm:git:git://github.com/lambdaisland/chui.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/chui.git</developerConnection>
-    <tag>d77928fd7f8ca7efe07d20c0e3736116a6db2c60</tag>
+    <tag>92d80243e5c6babc1827d0bd9fa909f7ce68e234</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>chui-core</artifactId>
-      <version>0.0.149</version>
+      <version>0.0.156</version>
     </dependency>
     <dependency>
       <groupId>lambdaisland</groupId>
@@ -49,12 +49,17 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.4</version>
+        <version>3.2.0</version>
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>d77928fd7f8ca7efe07d20c0e3736116a6db2c60</git-revision>
+              <git-revision>92d80243e5c6babc1827d0bd9fa909f7ce68e234</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
@@ -62,7 +67,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.5</version>
+        <version>1.6</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
