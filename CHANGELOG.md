@@ -6,6 +6,8 @@
 
 ## Changed
 
+- Change default in UI to show passing tests
+
 # 0.0.156 (2020-08-26 / 460519c)
 
 ## Fixed

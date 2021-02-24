@@ -187,11 +187,11 @@ inspect previous results.
 
 This third column shows namespaces and test vars. Note that if you have a lot of
 tests this can become hard to navigate, this is why you can enable the checkbox
-to only show failing tests.
+to hide passing tests.
 
 Finally the fourth column shows the individual assertions, with full details.
 Which assertions are visible depends on the selection in the third column. By
-default all failing tests get selected.
+default all failing assertions are shown.
 
 ### Limitations
 
