@@ -341,19 +341,34 @@
           [:div :view-stacktrace
            (str "For stacktrace: See error number " error-number " in console")]))]])
 
+(defn assertions-header [title wrap-lines?-atom]
+  [:span.section-header
+   [:h2 title]
+   (let [temp-id (str "wrap-assertions" (random-uuid))]
+       [:span.toggle-wrap
+     [:label {:for temp-id} "wrap"]
+     [:input
+      {:id temp-id
+       :type "checkbox"
+       :on-change (fn [e]
+                    (reset! wrap-lines?-atom (.. e -target -checked)))
+       :checked (boolean @wrap-lines?-atom)}]])])
+
 (defn test-assertions [{var-name :name :keys [assertions] :as var-info}]
   (reagent/with-let [pass? (comp #{:pass} :type)
-                     show-passing? (reagent/atom false)]
+                     show-passing? (reagent/atom false)
+                     wrap-lines? (reagent/atom false)
+                     _ (js/console.log "wrap-lines?")]
     [:div.test-info.card
-     [:h2.section-header var-name]
-     (into [:div]
+     [assertions-header var-name wrap-lines?]
+     (into [:<>]
            (comp
             (if @show-passing?
               identity
               (remove pass?))
             (map (fn [m]
                    [:div.inner-card.assertion {:class (name (:type m))}
-                    [report/fail-summary m]])))
+                    [report/fail-summary m @wrap-lines?]])))
            assertions)
      (let [pass-count (count (filter pass? assertions))]
        (when (and (not @show-passing?) (< 0 pass-count))

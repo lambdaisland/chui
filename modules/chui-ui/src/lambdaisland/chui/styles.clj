@@ -111,7 +111,8 @@
                 :flex-direction :column
                 :padding ".5rem"
                 :overflow :auto}
-     [:&:hover {:background-color :snow}]]]
+     [:&:hover :&:active {:background-color :snow
+                          :resize :horizontal}]]]
    [:.namespaces {:background-color :inherit}]
    [:.fieldset {:border "1px solid black"
                 :margin-top ".3rem"
@@ -127,17 +128,25 @@
    [:.selection-target {:background-color :white}
     [:&.selected {:background-color "#eee"}]]
    [:.history { :background-color :inherit}]
-   [:.section-header {:font-size "1.1rem"
-                      :font-weight "bold"
-                      :width "100%"
-                      :margin 0}]
+   [:.section-header {:width "100%"
+                      :display :inline-block
+                      :margin "2px"
+                      :position :relative}
+    [:.toggle-wrap {:position :absolute
+                    :top 0
+                    :bottom 0
+                    :right 0}]
+    [:h2 {:font-size "1.1rem"
+          :font-weight "bold"
+          :margin 0
+          :display :inline-block}]]
    [:.test-info {:background-color :initial
                  :padding ".5rem 1rem 1rem"
                  :margin-bottom "1rem"}
     [:.inner-card {:padding ".3rem .5rem"
                    :margin ".5rem 0"}]
     [:.assertion {:position :relative
-                  :overflow-y :auto}]
+                  :overflow :hidden}]
     [:.context :.message {:margin-bottom ".3rem"}]
     [:.pass {:border-right (str "4px solid " pass-color)}]
     [:.fail {:border-right (str "4px solid " fail-color)}]
@@ -148,9 +157,12 @@
              :font-weight :bold
              :font-variant-caps :all-small-caps
              :padding ".2rem .5rem"}]
+    [:pre {:overflow-x :auto}]
+    [:.fail-summary>div {:margin-right "40px"}]
+    [:.wrap {:overflow-x :hidden
+             :white-space :pre-wrap}]
     [:h4 {:margin 0
-          :font-variant-caps :all-small-caps
-          }]
+          :font-variant-caps :all-small-caps}]
     [:.bottom-link {:width "100%"
                     :display :block
                     :text-align :right
@@ -175,7 +187,9 @@
               :font-weight :bold
               :background-color :inherit
               :border :none
-              :font-size "1.1rem"}
+              :font-size "1.1rem"
+              :overflow :hidden
+              :text-overflow :clip}
     [:&:hover {:color :white
                :cursor :pointer}]]
    [:.run-tests {:color :silver
@@ -269,10 +283,13 @@
       :margin-bottom ".5rem"}
      [:h2 {:font-weight :normal
            :margin-bottom ".2rem"
-           :font-size "1.1rem"}]
+           :font-size "1.1rem"
+           :overflow :hidden
+           :text-overflow :ellipsis}]
      [:.filename {:color :darkslategray
                   :font-size ".8rem"
-                  :font-family :monospace}]]
+                  :font-family :monospace
+                  :word-break :break-all}]]
     [:>div {:display :flex
             :flex-direction :column
             :gap ".5rem"}]
@@ -309,7 +326,8 @@
                 :border-bottom 0}]
     [:h2 :h3 :h4 :p {:margin 0}]
     [:code {:font-family :monospace
-            :padding ".2rem"}]
+            :padding ".2rem"
+            :overflow-x :scroll}]
     [:.actual {:color :red
                :font-weight :bold}]]])
 
