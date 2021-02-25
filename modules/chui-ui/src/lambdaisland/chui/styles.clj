@@ -157,7 +157,7 @@
              :font-weight :bold
              :font-variant-caps :all-small-caps
              :padding ".2rem .5rem"}]
-    [:pre {:overflow-x :auto}]
+    [:.scroll {:overflow-x :auto}]
     [:.fail-summary>div {:margin-right "40px"}]
     [:.wrap {:overflow-x :hidden
              :white-space :pre-wrap}]
@@ -326,8 +326,7 @@
                 :border-bottom 0}]
     [:h2 :h3 :h4 :p {:margin 0}]
     [:code {:font-family :monospace
-            :padding ".2rem"
-            :overflow-x :scroll}]
+            :padding ".2rem"}]
     [:.actual {:color :red
                :font-weight :bold}]]])
 

@@ -48,7 +48,7 @@
     ;; :actual is of the form (not (= ...))
 
     (let [[_ expected & actuals] (-> m :actual second)]
-      [:div
+      [:div.scroll
        [:h4 "Expected"]
        (for [[i form] (map vector (range) (drop 2 (:expected m)))]
          ^{:key (str i)}
@@ -69,7 +69,7 @@
               html-printer
               (ddiff/diff expected actual))
              wrap-lines?])])])
-    [:div
+    [:div.scroll
      (when (contains? m :expected)
        [:div
         [:h4 "Expected"]
@@ -142,7 +142,7 @@
      [:aside "ERROR"]
      [message-context m]
      [:div (str exception)]
-     [:pre (when wrap-lines? {:class "wrap"})
+     [:pre (if wrap-lines? {:class "wrap"} {:class "scroll"})
       (if-let [trace @trace]
         (doall
          (for [[{:keys [function file line column]} i] (map vector trace (range))]
