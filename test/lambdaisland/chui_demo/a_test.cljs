@@ -26,6 +26,10 @@
                    (log/info :once :after)
                    (done)))})
 
+(deftest succeeding-test
+  (is true)
+  (is (= 1 1)))
+
 (deftest aa-test
   (is (= 1 1))
   (is (= [{:x 123}] [{:x 124}]))

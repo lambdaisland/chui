@@ -8,6 +8,7 @@
 
 - Added text wrapping support for test reports
 - Added basic column resizing via `resize: horizontal` CSS support
+- Change default in UI to show passing tests
 
 # 0.0.156 (2020-08-26 / 460519c)
 
