@@ -15,21 +15,20 @@
   (with-out-str
     (printer-impl/print-doc fipp-doc html-printer)))
 
-
-(defn pprint-doc [doc]
-  [:pre
+(defn pprint-doc [doc wrap-lines?]
+  [:pre (when wrap-lines? {:class "wrap"})
    [:code {:dangerouslySetInnerHTML {:__html (pprint-str doc)}}]])
 
 (defn assertion-type
   "Given a clojure.test event, return the first symbol in the expression inside (is)."
-  [m]
+  [m _]
   (if-let [s (and (seq? (:expected m)) (seq (:expected m)))]
     (first s)
     :default))
 
 (defmulti print-expr assertion-type)
 
-(defmethod print-expr :default [m]
+(defmethod print-expr :default [m wrap-lines?]
   [pprint-doc
    [:span
     (when (contains? m :expected)
@@ -40,25 +39,26 @@
       [:span
        :break
        "Actual:" :line
-       [:nest (puget-printer/format-doc html-printer (:actual m))]])]])
+       [:nest (puget-printer/format-doc html-printer (:actual m))]])]
+   wrap-lines?])
 
-(defn print-expr-= [m]
+(defn print-expr-= [m wrap-lines?]
   (if (and (seq? (second (:actual m)))
            (> (count (second (:actual m))) 2))
     ;; :actual is of the form (not (= ...))
 
     (let [[_ expected & actuals] (-> m :actual second)]
-      [:div
+      [:div.scroll
        [:h4 "Expected"]
        (for [[i form] (map vector (range) (drop 2 (:expected m)))]
          ^{:key (str i)}
-         [pprint-doc (puget-printer/format-doc html-printer form)])
+         [pprint-doc (puget-printer/format-doc html-printer form) wrap-lines?])
        [:h4 "To equal"]
-       [pprint-doc (puget-printer/format-doc html-printer expected)]
+       [pprint-doc (puget-printer/format-doc html-printer expected) wrap-lines?]
        [:h4 "Actual value"]
        (for [[i actual] (map vector (range) actuals)]
          ^{:key (str i)}
-         [pprint-doc (puget-printer/format-doc html-printer actual)])
+         [pprint-doc (puget-printer/format-doc html-printer actual) wrap-lines?])
        (when (and (coll? expected) (every? coll? actuals))
          [:div
           [:h4 "Diff"]
@@ -67,26 +67,27 @@
             [pprint-doc
              (puget-printer/format-doc
               html-printer
-              (ddiff/diff expected actual))])])])
-    [:div
+              (ddiff/diff expected actual))
+             wrap-lines?])])])
+    [:div.scroll
      (when (contains? m :expected)
        [:div
         [:h4 "Expected"]
-        [pprint-doc (puget-printer/format-doc html-printer (:expected m))]])
+        [pprint-doc (puget-printer/format-doc html-printer (:expected m)) wrap-lines?]])
      (when (contains? m :actual)
        [:div
         [:h4 "Actual"]
-        [pprint-doc (puget-printer/format-doc html-printer (:actual m))]])]))
+        [pprint-doc (puget-printer/format-doc html-printer (:actual m)) wrap-lines?]])]))
 
-(defmethod print-expr '= [m]
-  (print-expr-= m))
+(defmethod print-expr '= [m wrap-lines?]
+  (print-expr-= m wrap-lines?))
 
-(defmethod print-expr '=? [m]
-  (print-expr-= m))
+(defmethod print-expr '=? [m wrap-lines?]
+  (print-expr-= m wrap-lines?))
 
 (defmulti fail-summary :type)
 
-(defmethod fail-summary :default [_])
+(defmethod fail-summary :default [_ _])
 
 (defn testing-vars-str
   "Returns a string representation of the current test. Renders names
@@ -105,7 +106,7 @@
           ")"))))
 
 (defn message-context [{:keys [testing-contexts testing-vars expected message] :as m}]
-  [:div
+  [:<>
    (when (seq testing-contexts)
      [:div.context
       (for [[i ctx] (map vector (range) (reverse testing-contexts))]
@@ -114,22 +115,26 @@
    (when message
      [:div.message message])])
 
-(defmethod fail-summary :pass [{:keys [testing-contexts testing-vars expected message] :as m}]
+(defmethod fail-summary :pass [{:keys [testing-contexts testing-vars expected message] :as m}
+                               wrap-lines?]
   [:div.fail-summary
    [:aside "PASS"]
    [message-context m]
    [pprint-doc
-    (puget-printer/format-doc html-printer expected)]])
+    (puget-printer/format-doc html-printer expected)
+    wrap-lines?]])
 
-(defmethod fail-summary :fail [{:keys [testing-contexts testing-vars message] :as m}]
+(defmethod fail-summary :fail [{:keys [testing-contexts testing-vars message] :as m}
+                               wrap-lines?]
   [:div.fail-summary
    [:aside "FAIL"]
    ;; "FAIL in " (testing-vars-str m)
    [message-context m]
-   [print-expr m]])
+   [print-expr m wrap-lines?]])
 
 (defmethod fail-summary :error [{exception :actual
-                                 :keys [testing-contexts testing-vars message] :as m}]
+                                 :keys [testing-contexts testing-vars message] :as m}
+                                wrap-lines?]
   (reagent/with-let [trace-p (stacktrace/from-error exception)
                      trace (reagent/atom nil)]
     (p/let [t trace-p] (reset! trace t))
@@ -137,7 +142,7 @@
      [:aside "ERROR"]
      [message-context m]
      [:div (str exception)]
-     [:pre
+     [:pre (if wrap-lines? {:class "wrap"} {:class "scroll"})
       (if-let [trace @trace]
         (doall
          (for [[{:keys [function file line column]} i] (map vector trace (range))]
