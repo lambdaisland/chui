@@ -1,4 +1,4 @@
 {:deps
- {lambdaisland/open-source {#_#_:git/url "https://github.com/lambdaisland/open-source"
-                            #_#_:sha "c9a1c6de106bbddbadf8c015666c208833ec80ff"
-                            :local/root "../open-source"}}}
+ {lambdaisland/open-source {:git/url "https://github.com/lambdaisland/open-source"
+                            :sha "8394636b31285f0445618146da1f30f4af4c4574"
+                            #_#_:local/root "../open-source"}}}
