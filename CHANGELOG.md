@@ -1,9 +1,5 @@
 # Unreleased
 
-## Added
-
-## Fixed
-
 ## Changed
 
 - Added text wrapping support for test reports
