@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemalocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>lambdaisland</groupId>
   <artifactId>chui-ui</artifactId>
-  <version>0.0.156</version>
+  <version>1.0.163</version>
   <name>chui-ui</name>
   <description>Browser UI for the Chui test runner</description>
   <url>https://github.com/lambdaisland/chui</url>
@@ -22,18 +22,18 @@
     <url>https://github.com/lambdaisland/chui</url>
     <connection>scm:git:git://github.com/lambdaisland/chui.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/chui.git</developerConnection>
-    <tag>92d80243e5c6babc1827d0bd9fa909f7ce68e234</tag>
+    <tag>5b536a95f1377f6064b94c6f6604cd0e54d8b883</tag>
   </scm>
   <dependencies>
-    <dependency>
-      <groupId>lambdaisland</groupId>
-      <artifactId>chui-core</artifactId>
-      <version>0.0.156</version>
-    </dependency>
     <dependency>
       <groupId>reagent</groupId>
       <artifactId>reagent</artifactId>
       <version>0.10.0</version>
+    </dependency>
+    <dependency>
+      <groupId>lambdaisland</groupId>
+      <artifactId>chui-core</artifactId>
+      <version>1.0.163</version>
     </dependency>
   </dependencies>
   <build>
@@ -62,7 +62,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>92d80243e5c6babc1827d0bd9fa909f7ce68e234</git-revision>
+              <git-revision>5b536a95f1377f6064b94c6f6604cd0e54d8b883</git-revision>
             </manifestEntries>
           </archive>
         </configuration>

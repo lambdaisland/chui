@@ -1,7 +1,7 @@
 # chui
 
 <!-- badges -->
-[![CircleCI](https://circleci.com/gh/lambdaisland/chui.svg?style=svg)](https://circleci.com/gh/lambdaisland/chui) [![cljdoc badge](https://cljdoc.org/badge/lambdaisland/chui)](https://cljdoc.org/d/lambdaisland/chui) [![Clojars Project](https://img.shields.io/clojars/v/lambdaisland/chui.svg)](https://clojars.org/lambdaisland/chui)
+[![cljdoc badge](https://cljdoc.org/badge/lambdaisland/chui)](https://cljdoc.org/d/lambdaisland/chui) [![Clojars Project](https://img.shields.io/clojars/v/lambdaisland/chui.svg)](https://clojars.org/lambdaisland/chui)
 <!-- /badges -->
 
 Modern ClojureScript test runner
@@ -63,13 +63,13 @@ technical background.
 deps.edn
 
 ``` clojure
-lambdaisland/chui {:mvn/version "0.0.156"}
+lambdaisland/chui {:mvn/version "1.0.163"}
 ```
 
 project.clj
 
 ``` clojure
-[lambdaisland/chui "0.0.156"]
+[lambdaisland/chui "1.0.163"]
 ```
 
 
