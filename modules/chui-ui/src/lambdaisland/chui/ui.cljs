@@ -15,7 +15,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; State
 
-(defonce ui-state (reagent/atom {:only-failing? true}))
+(defonce ui-state (reagent/atom {:hide-passing? false}))
 
 ;; Replace the regular atom with an ratom
 (set! runner/state (reagent/atom @runner/state))
@@ -167,18 +167,18 @@
 
 (defn run-results [{:keys [ns vars]
                     :as the-ns}]
-  (let [{:keys [only-failing?]} @ui-state
+  (let [{:keys [hide-passing?]} @ui-state
         selected-tests (selected-tests)
         sum (runner/ns-summary the-ns)
-        fail? (runner/fail? sum)]
-    (when (or (not only-failing?) fail?)
+        success? (not (runner/fail? sum))]
+    (when-not (and hide-passing? success?)
       [:article.ns-run.card
        [:header.ns-run--header
         [:h2 (str ns)]
         [:small.filename (:file (:meta (first vars)))]]
        [:div
         (for [{var-name :name :keys [assertions] :as var-info} (sort-by (comp :line :meta) vars)
-              :when (or (not only-failing?) (some (comp #{:fail :error} :type) assertions))
+              :when (or (not hide-passing?) (some (comp #{:fail :error} :type) assertions))
               :let [selected? (some (comp #{var-name} :name) selected-tests)
                     sum (runner/var-summary var-info)
                     error? (runner/error? sum)
@@ -223,11 +223,11 @@
                   (push-state-to-location))
      :checked (boolean (:regexp? @ui-state))}]
    [:label {:for "regexp"} "Regexp search"]
-   [:input#failing-only
+   [:input#hide-passing
     {:type "checkbox"
-     :checked (boolean (:only-failing? @ui-state))
-     :on-change #(swap! ui-state assoc :only-failing? (.. % -target -checked))}]
-   [:label {:for "failing-only"} "Only show failing tests"]])
+     :checked (boolean (:hide-passing? @ui-state))
+     :on-change #(swap! ui-state assoc :hide-passing? (.. % -target -checked))}]
+   [:label {:for "hide-passing"} "Hide passing tests"]])
 
 (defn header [last-run]
   (let [sum (runner/run-summary last-run)]
@@ -251,7 +251,7 @@
   [:section.column.history
    [:div.option
     (let [{:keys [selected]} @runner/state
-          {:keys [only-failing?]} @ui-state
+          {:keys [hide-passing?]} @ui-state
           selected-run (selected-run)]
       (for [{:keys [id nss start done? terminated?] :as run} (reverse runs)
             :let [selected? (= id (:id selected-run))
@@ -277,7 +277,7 @@
             [:small
              (when-not done? "Running")
              (when terminated? "Aborted")]]
-           [result-viz (if only-failing?
+           [result-viz (if hide-passing?
                          (filter #(runner/fail? (runner/ns-summary %)) nss)
                          nss) selected]
            [:footer
