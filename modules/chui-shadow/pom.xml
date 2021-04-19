@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>lambdaisland</groupId>
   <artifactId>chui-shadow</artifactId>
-  <version>1.0.173</version>
+  <version>1.0.179</version>
   <name>chui-shadow</name>
   <description>Chui-based test runner namespaces to be used with Shadow-cljs</description>
   <url>https://github.com/lambdaisland/chui</url>
@@ -22,13 +22,13 @@
     <url>https://github.com/lambdaisland/chui</url>
     <connection>scm:git:git://github.com/lambdaisland/chui.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/chui.git</developerConnection>
-    <tag>9019f34da585359e60c34f39aac446cf24590b43</tag>
+    <tag>c8ca1c3ac638c3b68cb145e2db17b2ae10625bed</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>chui-ui</artifactId>
-      <version>1.0.173</version>
+      <version>1.0.179</version>
     </dependency>
   </dependencies>
   <build>
@@ -51,7 +51,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>9019f34da585359e60c34f39aac446cf24590b43</git-revision>
+              <git-revision>c8ca1c3ac638c3b68cb145e2db17b2ae10625bed</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
