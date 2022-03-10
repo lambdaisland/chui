@@ -1,2 +1,3 @@
 #!/bin/bash
-clojure -A:test:dev -m kaocha.runner "$@"
+
+exec clojure -A:test:dev -m kaocha.runner "$@"
