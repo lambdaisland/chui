@@ -1,16 +1,11 @@
 # Unreleased
 
-## Added
-
-## Fixed
-
 ## Changed
 
+- Upgrade Glögi
+- Upgrade Reagent
+
 # 1.0.179 (2021-04-19 / 7332d1e)
-
-## Added
-
-## Fixed
 
 ## Changed
 
