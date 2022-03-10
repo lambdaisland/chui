@@ -21,6 +21,7 @@
   :inception-year 2020
   :description    "Modern ClojureScript test runner"
   :pre-release-hook gen-styles
+  :group-id "lambdaisland"
   :modules [{:name        "chui-core"
              :description "ClojureScript Test Runner Core"}
             {:name        "chui-ui"
