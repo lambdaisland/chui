@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>lambdaisland</groupId>
   <artifactId>chui-ui</artifactId>
-  <version>1.0.179</version>
+  <version>1.1.192</version>
   <name>chui-ui</name>
   <description>Browser UI for the Chui test runner</description>
   <url>https://github.com/lambdaisland/chui</url>
@@ -12,6 +12,9 @@
     <name>Lambda Island</name>
     <url>https://lambdaisland.com</url>
   </organization>
+  <properties>
+    <project class="build sourceEncoding">UTF-8</project>
+  </properties>
   <licenses>
     <license>
       <name>Eclipse Public License 1.0</name>
@@ -22,18 +25,18 @@
     <url>https://github.com/lambdaisland/chui</url>
     <connection>scm:git:git://github.com/lambdaisland/chui.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/chui.git</developerConnection>
-    <tag>c8ca1c3ac638c3b68cb145e2db17b2ae10625bed</tag>
+    <tag>591e49002a27ba43ee33b081cd6aaf2d107f7093</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>reagent</groupId>
       <artifactId>reagent</artifactId>
-      <version>0.10.0</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>chui-core</artifactId>
-      <version>1.0.179</version>
+      <version>1.1.192</version>
     </dependency>
   </dependencies>
   <build>
@@ -54,6 +57,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -62,7 +69,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>c8ca1c3ac638c3b68cb145e2db17b2ae10625bed</git-revision>
+              <git-revision>591e49002a27ba43ee33b081cd6aaf2d107f7093</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
