@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fix Safari line-and-col reporting bug
+
 ## Added
 
 ## Fixed

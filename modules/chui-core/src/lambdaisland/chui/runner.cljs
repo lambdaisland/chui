@@ -90,8 +90,8 @@
         (let [line-col (drop (- (count frame) 2) frame)
               file     (str/join ":" (take (- (count frame) 2) frame))]
           {:file   file
-           :line   (js/parseInt (re-find #"\d+" (first line-col)) 10)
-           :column (js/parseInt (re-find #"\d+" (second line-col)) 10)})))))
+           :line   (js/parseInt (re-find #"\d+" (str (first line-col))) 10)
+           :column (js/parseInt (re-find #"\d+" (str (second line-col))) 10)})))))
 
 (defmulti report :type)
 (defmethod report :default [_])
