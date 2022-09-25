@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fix Safari line-and-col reporting bug
+- Fix 0 runnable tests showing initially on Chui ui
 
 ## Added
 
