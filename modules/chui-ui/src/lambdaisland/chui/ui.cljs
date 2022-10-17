@@ -17,8 +17,9 @@
 
 (defonce ui-state (reagent/atom {:hide-passing? false}))
 
-;; Replace the regular atom with an ratom
+;; Replace the regular atoms with ratoms
 (set! runner/state (reagent/atom @runner/state))
+(set! test-data/test-ns-data (reagent/atom @test-data/test-ns-data))
 
 (declare run-tests)
 
