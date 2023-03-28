@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>lambdaisland</groupId>
   <artifactId>chui</artifactId>
-  <version>1.1.192</version>
+  <version>1.2.205</version>
   <name>chui</name>
   <description>Modern ClojureScript test runner</description>
   <url>https://github.com/lambdaisland/chui</url>
@@ -25,28 +25,28 @@
     <url>https://github.com/lambdaisland/chui</url>
     <connection>scm:git:git://github.com/lambdaisland/chui.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/lambdaisland/chui.git</developerConnection>
-    <tag>591e49002a27ba43ee33b081cd6aaf2d107f7093</tag>
+    <tag>13763d24ab4a8042a6b9f4ade5c588a197019908</tag>
   </scm>
   <dependencies>
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>chui-core</artifactId>
-      <version>1.1.192</version>
+      <version>1.2.205</version>
     </dependency>
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>chui-ui</artifactId>
-      <version>1.1.192</version>
+      <version>1.2.205</version>
     </dependency>
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>chui-remote</artifactId>
-      <version>1.1.192</version>
+      <version>1.2.205</version>
     </dependency>
     <dependency>
       <groupId>lambdaisland</groupId>
       <artifactId>chui-shadow</artifactId>
-      <version>1.1.192</version>
+      <version>1.2.205</version>
     </dependency>
   </dependencies>
   <build>
@@ -67,7 +67,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>591e49002a27ba43ee33b081cd6aaf2d107f7093</git-revision>
+              <git-revision>13763d24ab4a8042a6b9f4ade5c588a197019908</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
