@@ -1,4 +1,4 @@
-# Unreleased
+# 1.2.205 (2023-03-27 / 42b0572)
 
 - Fix Safari line-and-col reporting bug
 - Fix 0 runnable tests showing initially on Chui ui
